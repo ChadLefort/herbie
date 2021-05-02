@@ -13,7 +13,7 @@ import { useKeyPress } from '../common/useKeyPress';
 import { environment } from '../environments/environment';
 import { Video } from './Video';
 
-const ws = new WebSocket(`ws://localhost:${environment.serverPort}/herbie/control`);
+const ws = new WebSocket(`ws://${environment.serverPath}:${environment.apiServerPort}/herbie/control`);
 const navHeight = '67px';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

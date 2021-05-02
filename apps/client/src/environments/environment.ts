@@ -3,5 +3,7 @@
 
 export const environment = {
   production: false,
-  serverPort: 3000
+  serverPath: 'localhost',
+  apiServerPort: 3000,
+  videoServerPort: 3000
 };

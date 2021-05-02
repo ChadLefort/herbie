@@ -4,6 +4,7 @@ import { createStyles, makeStyles } from '@material-ui/core/styles';
 import React, { useEffect, useState } from 'react';
 
 import { Signal } from '../common/Signal';
+import { environment } from '../environments/environment';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -54,7 +55,12 @@ export const Video: React.FC<Props> = ({ start, setStart, setError }) => {
 
     if (start) {
       videoRef.current?.addEventListener('loadeddata', onLoading);
-      signal = new Signal('ws://192.168.86.181:3000/herbie/video', onStream, onClose, setError);
+      signal = new Signal(
+        `ws://${environment.serverPath}:${environment.videoServerPort}/herbie/video`,
+        onStream,
+        onClose,
+        setError
+      );
       setIsLoading(true);
     }
 

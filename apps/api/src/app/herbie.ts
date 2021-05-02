@@ -90,9 +90,8 @@ export class Herbie {
 
   stop() {
     this.hasStarted = false;
-    const { head, wheels, eyes } = this.body;
+    const { head, wheels } = this.body;
     head.center();
-    eyes.kill();
     wheels.both?.stop();
   }
 

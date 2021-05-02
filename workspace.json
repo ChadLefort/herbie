@@ -1,23 +1,12 @@
 {
   "version": 2,
-  "cli": {
-    "defaultCollection": "@nrwl/react"
-  },
+  "cli": { "defaultCollection": "@nrwl/react" },
   "defaultProject": "client",
   "generators": {
     "@nrwl/react": {
-      "application": {
-        "style": "none",
-        "linter": "eslint",
-        "babel": true
-      },
-      "component": {
-        "style": "none"
-      },
-      "library": {
-        "style": "none",
-        "linter": "eslint"
-      }
+      "application": { "style": "none", "linter": "eslint", "babel": true },
+      "component": { "style": "none" },
+      "library": { "style": "none", "linter": "eslint" }
     }
   },
   "projects": {
@@ -55,68 +44,30 @@
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
-                }
-              ]
+              "budgets": [{ "type": "initial", "maximumWarning": "2mb", "maximumError": "5mb" }]
             }
+          }
+        },
+        "build-ssh": {
+          "executor": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": ["nx build client --configuration=production", "scp -r dist/ pi-zero:projects/herbie"],
+            "parallel": false
           }
         },
         "serve": {
           "executor": "@nrwl/web:dev-server",
-          "options": {
-            "buildTarget": "client:build",
-            "port": 3000,
-            "proxyConfig": "apps/client/proxy.conf.json"
-          },
-          "configurations": {
-            "production": {
-              "buildTarget": "client:build:production"
-            }
-          }
+          "options": { "buildTarget": "client:build", "port": 3000, "proxyConfig": "apps/client/proxy.conf.json" },
+          "configurations": { "production": { "buildTarget": "client:build:production" } }
         },
         "lint": {
           "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["apps/client/**/*.{ts,tsx,js,jsx}"]
-          }
+          "options": { "lintFilePatterns": ["apps/client/**/*.{ts,tsx,js,jsx}"] }
         },
         "test": {
           "executor": "@nrwl/jest:jest",
           "outputs": ["coverage/apps/client"],
-          "options": {
-            "jestConfig": "apps/client/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
-    "client-e2e": {
-      "root": "apps/client-e2e",
-      "sourceRoot": "apps/client-e2e/src",
-      "projectType": "application",
-      "targets": {
-        "e2e": {
-          "executor": "@nrwl/cypress:cypress",
-          "options": {
-            "cypressConfig": "apps/client-e2e/cypress.json",
-            "tsConfig": "apps/client-e2e/tsconfig.e2e.json",
-            "devServerTarget": "client:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "client:serve:production"
-            }
-          }
-        },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["apps/client-e2e/**/*.{js,ts}"]
-          }
+          "options": { "jestConfig": "apps/client/jest.config.js", "passWithNoTests": true }
         }
       }
     },
@@ -135,33 +86,22 @@
             "tsConfig": "apps/api/tsconfig.app.json"
           },
           "configurations": {
-            "production": {
-              "optimization": true,
-              "extractLicenses": true,
-              "inspect": false,
-              "fileReplacements": []
-            }
+            "production": { "optimization": true, "extractLicenses": true, "inspect": false, "fileReplacements": [] }
           }
         },
-        "serve": {
-          "executor": "@nrwl/node:execute",
+        "build-ssh": {
+          "executor": "@nrwl/workspace:run-commands",
           "options": {
-            "buildTarget": "api:build"
+            "commands": ["nx build api --configuration=production", "scp -r dist/ pi-zero:projects/herbie"],
+            "parallel": false
           }
         },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["apps/api/**/*.ts"]
-          }
-        },
+        "serve": { "executor": "@nrwl/node:execute", "options": { "buildTarget": "api:build" } },
+        "lint": { "executor": "@nrwl/linter:eslint", "options": { "lintFilePatterns": ["apps/api/**/*.ts"] } },
         "test": {
           "executor": "@nrwl/jest:jest",
           "outputs": ["coverage/apps/api"],
-          "options": {
-            "jestConfig": "apps/api/jest.config.js",
-            "passWithNoTests": true
-          }
+          "options": { "jestConfig": "apps/api/jest.config.js", "passWithNoTests": true }
         }
       }
     }

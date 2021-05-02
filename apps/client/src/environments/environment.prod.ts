@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  serverPort: 4000
+  serverPath: 'pi-zero',
+  apiServerPort: 4000,
+  videoServerPort: 3000
 };
