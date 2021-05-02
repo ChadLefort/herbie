@@ -1,0 +1,109 @@
+{
+  "version": 2,
+  "cli": { "defaultCollection": "@nrwl/react" },
+  "defaultProject": "client",
+  "generators": {
+    "@nrwl/react": {
+      "application": { "style": "none", "linter": "eslint", "babel": true },
+      "component": { "style": "none" },
+      "library": { "style": "none", "linter": "eslint" }
+    }
+  },
+  "projects": {
+    "client": {
+      "root": "apps/client",
+      "sourceRoot": "apps/client/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/web:build",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/client",
+            "index": "apps/client/src/index.html",
+            "main": "apps/client/src/main.tsx",
+            "polyfills": "apps/client/src/polyfills.ts",
+            "tsConfig": "apps/client/tsconfig.app.json",
+            "assets": ["apps/client/src/assets"],
+            "styles": [],
+            "scripts": [],
+            "webpackConfig": "@nrwl/react/plugins/webpack"
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/client/src/environments/environment.ts",
+                  "with": "apps/client/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "budgets": [{ "type": "initial", "maximumWarning": "2mb", "maximumError": "5mb" }]
+            }
+          }
+        },
+        "build-ssh": {
+          "executor": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": ["nx build client --configuration=production", "scp -r dist/ pi-zero:projects/herbie"],
+            "parallel": false
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/web:dev-server",
+          "options": { "buildTarget": "client:build", "port": 3000, "proxyConfig": "apps/client/proxy.conf.json" },
+          "configurations": { "production": { "buildTarget": "client:build:production" } }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": { "lintFilePatterns": ["apps/client/**/*.{ts,tsx,js,jsx}"] }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/client"],
+          "options": { "jestConfig": "apps/client/jest.config.js", "passWithNoTests": true }
+        }
+      }
+    },
+    "api": {
+      "root": "apps/api",
+      "sourceRoot": "apps\\api\\src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:build",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "port": 4000,
+            "outputPath": "dist/apps/api",
+            "main": "apps/api/src/main.ts",
+            "tsConfig": "apps/api/tsconfig.app.json"
+          },
+          "configurations": {
+            "production": { "optimization": true, "extractLicenses": true, "inspect": false, "fileReplacements": [] }
+          }
+        },
+        "build-ssh": {
+          "executor": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": ["nx build api --configuration=production", "scp -r dist/ pi-zero:projects/herbie"],
+            "parallel": false
+          }
+        },
+        "serve": { "executor": "@nrwl/node:execute", "options": { "buildTarget": "api:build" } },
+        "lint": { "executor": "@nrwl/linter:eslint", "options": { "lintFilePatterns": ["apps/api/**/*.ts"] } },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/api"],
+          "options": { "jestConfig": "apps/api/jest.config.js", "passWithNoTests": true }
+        }
+      }
+    }
+  }
+}
