@@ -681,8 +681,8 @@ declare module 'johnny-five' {
   }
 
   export interface ProximityData {
-    cm: number;
-    in: number;
+    centimeters: number;
+    inches: number;
   }
 
   export class Proximity {
