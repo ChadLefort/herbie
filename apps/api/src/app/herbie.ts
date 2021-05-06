@@ -1,11 +1,11 @@
-import { Board, Servo, Servos } from 'johnny-five';
-import { RaspiIO as Raspi } from 'raspi-io';
-import { Sonar } from 'raspi-sonar';
+import { Board, Proximity, Servo, Servos } from 'johnny-five';
+import PiIO from 'pi-io';
 import ws from 'ws';
 
 import { logger } from './logger';
 
-const controller = 'PCA9685';
+const servoController = 'PCA9685';
+const proximityController = 'HCSR04'
 
 export interface IInformation {
   name: string;
@@ -15,7 +15,7 @@ export interface IInformation {
 }
 
 interface IBody {
-  eyes: Sonar;
+  eyes: Proximity;
   head: Servo;
   wheels: IWheels;
 }
@@ -35,25 +35,27 @@ export class Herbie {
   private hasStarted = false;
 
   board = new Board({
-    io: new Raspi(),
-    repl: false
+    io: new PiIO()
   });
 
   body: IBody = {
-    eyes: new Sonar(1),
+    eyes: new Proximity({
+      controller: proximityController,
+      pin: 'GPIO18'
+    }),
     head: new Servo({
-      controller,
+      controller: servoController,
       pin: 0,
       invert: true
     }),
     wheels: {
       left: new Servo({
-        controller,
+        controller: servoController,
         pin: 1,
         type: 'continuous'
       }),
       right: new Servo({
-        controller,
+        controller: servoController,
         pin: 2,
         type: 'continuous',
         invert: true
@@ -74,22 +76,17 @@ export class Herbie {
     this.hasStarted = true;
     const { wheels, eyes } = this.body;
 
-    setInterval(() => {
-      if (this.hasStarted) {
-        eyes.read((duration) => {
-          const distance = ((343.0 * duration) / 10000) * 0.5;
-          const inches = Math.round(distance * 0.3937 * 100 + Number.EPSILON) / 100;
-          logger.info(`PING))): ${inches} inches`);
-          ws.send(JSON.stringify({ action: 'ping', payload: inches }));
-        });
-      }
-    }, 1500);
+    eyes.on('data', ({ inches }) => {
+      logger.info(`PING))): ${inches} inches`);
+      ws.send(JSON.stringify({ action: 'ping', payload: inches }));
+    });
 
     wheels.both = new Servos([wheels.left, wheels.right]);
   }
 
   stop() {
     this.hasStarted = false;
+    
     const { head, wheels } = this.body;
     head.center();
     wheels.both?.stop();
