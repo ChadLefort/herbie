@@ -5,7 +5,7 @@ import ws from 'ws';
 import { logger } from './logger';
 
 const servoController = 'PCA9685';
-const proximityController = 'HCSR04'
+const proximityController = 'HCSR04';
 
 export interface IInformation {
   name: string;
@@ -41,7 +41,8 @@ export class Herbie {
   body: IBody = {
     eyes: new Proximity({
       controller: proximityController,
-      pin: 'GPIO18'
+      pin: 'GPIO18',
+      freq: 500
     }),
     head: new Servo({
       controller: servoController,
@@ -76,9 +77,18 @@ export class Herbie {
     this.hasStarted = true;
     const { wheels, eyes } = this.body;
 
-    eyes.on('data', ({ inches }) => {
-      logger.info(`PING))): ${inches} inches`);
-      ws.send(JSON.stringify({ action: 'ping', payload: inches }));
+    eyes.on('change', ({ inches }) => {
+      if (this.hasStarted) {
+        logger.info(`PING))): ${inches} inches`);
+
+        try {
+          if (ws.readyState != ws.CLOSED) {
+            ws.send(JSON.stringify({ action: 'ping', payload: inches }));
+          }
+        } catch (error) {
+          logger.error(error.message);
+        }
+      }
     });
 
     wheels.both = new Servos([wheels.left, wheels.right]);
@@ -86,7 +96,7 @@ export class Herbie {
 
   stop() {
     this.hasStarted = false;
-    
+
     const { head, wheels } = this.body;
     head.center();
     wheels.both?.stop();

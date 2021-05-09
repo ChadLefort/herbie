@@ -1,1 +1,3 @@
-export const isOpen = (ws: WebSocket) => ws.readyState === ws.OPEN;
+import ReconnectingWebSocket from 'reconnecting-websocket';
+
+export const isOpen = (ws: ReconnectingWebSocket) => ws.readyState === ws.OPEN;

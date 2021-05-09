@@ -1,7 +1,9 @@
+import ReconnectingWebSocket from 'reconnecting-websocket';
+
 import { isOpen } from './helpers';
 
 export class Signal {
-  ws: WebSocket | null = null;
+  ws: ReconnectingWebSocket | null = null;
   pc: RTCPeerConnection | null = null;
   iceCandidates: RTCIceCandidate[] = [];
   hasRemoteDesc = false;
@@ -10,10 +12,10 @@ export class Signal {
     url: string,
     onStream: (stream: MediaStream) => void,
     onClose: () => void,
-    onError?: (error: string) => void,
+    onError?: (error: Error) => void,
     onMessage?: (message: string) => void
   ) {
-    this.ws = new WebSocket(url);
+    this.ws = new ReconnectingWebSocket(url);
     this.handleSocketEvents(onStream, onClose, onError, onMessage);
   }
 
@@ -34,7 +36,7 @@ export class Signal {
   handleSocketEvents(
     onStream: (stream: MediaStream) => void,
     onClose: () => void,
-    onError?: (error: string) => void,
+    onError?: (error: Error) => void,
     onMessage?: (message: string) => void
   ) {
     if (this.ws) {
@@ -79,21 +81,20 @@ export class Signal {
       this.ws.onmessage = async (event) => {
         const msg = JSON.parse(event.data);
         const { what, data } = msg;
+        const elt = JSON.parse(msg.data);
 
         switch (what) {
           case 'offer':
-            const mediaConstraints: RTCOfferOptions = {
-              offerToReceiveAudio: false,
-              offerToReceiveVideo: true
-            };
-
             try {
               await this.pc?.setRemoteDescription(new RTCSessionDescription(JSON.parse(data)));
               this.hasRemoteDesc = true;
               this.addIceCandidates();
 
               try {
-                const sessionDescription = await this.pc?.createAnswer(mediaConstraints);
+                const sessionDescription = await this.pc?.createAnswer({
+                  offerToReceiveAudio: false,
+                  offerToReceiveVideo: true
+                });
 
                 if (sessionDescription) {
                   this.pc?.setLocalDescription(sessionDescription);
@@ -106,12 +107,12 @@ export class Signal {
                 }
               } catch (error) {
                 if (onError) {
-                  onError(`Failed to create answer: ${error}`);
+                  onError(new Error(`Failed to create answer: ${error}`));
                 }
               }
             } catch (error) {
               if (onError) {
-                onError(`Failed to set the remote description: ${event}`);
+                onError(new Error(`Failed to set the remote description: ${event}`));
               }
 
               this.ws?.close();
@@ -129,19 +130,17 @@ export class Signal {
               break;
             }
 
-            const elt = JSON.parse(msg.data);
-            const candidate = new RTCIceCandidate({
-              sdpMLineIndex: elt.sdpMLineIndex,
-              candidate: elt.candidate
-            });
+            this.iceCandidates.push(
+              new RTCIceCandidate({
+                sdpMLineIndex: elt.sdpMLineIndex,
+                candidate: elt.candidate
+              })
+            );
 
-            this.iceCandidates.push(candidate);
             this.addIceCandidates();
             break;
           case 'iceCandidates':
-            const candidates: RTCIceCandidate[] = JSON.parse(msg.data);
-
-            candidates.forEach((elt) => {
+            (JSON.parse(msg.data) as RTCIceCandidate[]).forEach((elt) => {
               const candidate = new RTCIceCandidate({
                 sdpMLineIndex: elt.sdpMLineIndex,
                 candidate: elt.candidate
@@ -167,7 +166,7 @@ export class Signal {
         }
       };
 
-      this.ws.onerror = () => onError && onError('An error has occurred with the video feed');
+      this.ws.onerror = () => onError && onError(new Error('An error has occurred with the video feed'));
     }
   }
 }

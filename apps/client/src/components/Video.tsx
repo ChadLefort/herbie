@@ -1,12 +1,13 @@
 import Grid from '@material-ui/core/Grid';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
+import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import React, { useEffect, useState } from 'react';
 
+import { wsVideoURL } from '../app/ws';
+import { useError } from '../common/hooks/useError';
 import { Signal } from '../common/Signal';
-import { environment } from '../environments/environment';
 
-const useStyles = makeStyles(() =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
       width: '50%',
@@ -14,7 +15,8 @@ const useStyles = makeStyles(() =>
     },
     video: {
       width: '100.2%',
-      height: '100%'
+      height: '100%',
+      borderRadius: theme.spacing(3)
     }
   })
 );
@@ -22,13 +24,13 @@ const useStyles = makeStyles(() =>
 type Props = {
   start?: boolean;
   setStart: React.Dispatch<React.SetStateAction<boolean | undefined>>;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
-export const Video: React.FC<Props> = ({ start, setStart, setError }) => {
+export const Video: React.FC<Props> = ({ start, setStart }) => {
   const classes = useStyles();
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { setError } = useError();
 
   const onLoading = () => setIsLoading(false);
 
@@ -55,12 +57,7 @@ export const Video: React.FC<Props> = ({ start, setStart, setError }) => {
 
     if (start) {
       videoRef.current?.addEventListener('loadeddata', onLoading);
-      signal = new Signal(
-        `ws://${environment.serverPath}:${environment.videoServerPort}/herbie/video`,
-        onStream,
-        onClose,
-        setError
-      );
+      signal = new Signal(wsVideoURL, onStream, onClose, setError);
       setIsLoading(true);
     }
 

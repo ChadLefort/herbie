@@ -689,7 +689,7 @@ declare module 'johnny-five' {
     constructor(option: number | ProximityOption);
     on(event: string, cb: () => void): this;
     on(event: 'data', cb: (data: ProximityData) => void): this;
-    on(event: 'change', cb: () => void): this;
+    on(event: 'change', cb: (data: ProximityData) => void): this;
 
     centimeters: number;
     inches: number;

@@ -1,43 +1,49 @@
 import Avatar from '@material-ui/core/Avatar';
-import Button from '@material-ui/core/Button';
-import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
+import Container from '@material-ui/core/Container';
+import IconButton from '@material-ui/core/IconButton';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import StartIcon from '@material-ui/icons/PlayArrow';
 import StopIcon from '@material-ui/icons/Stop';
+import { mdiRobot } from '@mdi/js';
+import Icon from '@mdi/react';
 import useMouse from '@react-hook/mouse-position';
-import { useSnackbar } from 'notistack';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { wsControl } from '../app/ws';
 import { isOpen } from '../common/helpers';
-import { useKeyPress } from '../common/useKeyPress';
-import { environment } from '../environments/environment';
+import { useError } from '../common/hooks/useError';
+import { useKeyPress } from '../common/hooks/useKeyPress';
+import { usePing } from '../common/hooks/usePing';
 import { Video } from './Video';
 
-const ws = new WebSocket(`ws://${environment.serverPath}:${environment.apiServerPort}/herbie/control`);
-const navHeight = '67px';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      height: `calc(100vh - ${navHeight})`
+      display: 'flex',
+      flex: 1,
+      flexDirection: 'column'
     },
     container: {
       padding: theme.spacing(2)
+    },
+    logo: {
+      margin: theme.spacing(2)
+    },
+    logoText: {
+      fontFamily: 'Pacifico, cursive'
     },
     button: {
       margin: theme.spacing(2)
     },
     avatar: {
-      width: theme.spacing(50),
-      height: theme.spacing(50),
+      width: theme.spacing(75),
+      height: theme.spacing(75),
       margin: theme.spacing(2)
     },
-    videoContainer: {
-      width: '50%',
-      overflow: 'hidden'
-    },
-    video: {
-      width: '100.2%',
-      height: '100%'
+    rounded: {
+      borderRadius: theme.spacing(3)
     }
   })
 );
@@ -45,10 +51,11 @@ const useStyles = makeStyles((theme: Theme) =>
 export const Controls: React.FC = () => {
   const classes = useStyles();
   const [start, setStart] = useState<boolean | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
-  const [ping, setPing] = useState<number | null>(null);
+
   const mouseRef = React.useRef(null);
-  const { enqueueSnackbar } = useSnackbar();
+  const { setError } = useError();
+
+  usePing(start);
 
   const keyW = useKeyPress('w', start || false);
   const keyA = useKeyPress('a', start || false);
@@ -61,23 +68,13 @@ export const Controls: React.FC = () => {
   });
 
   useEffect(() => {
-    if (ping && ping <= 12) {
-      enqueueSnackbar('Oh snap! Herbie is close to an object.', { variant: 'warning' });
-    }
-
-    if (error) {
-      enqueueSnackbar(error, { variant: 'error' });
-    }
-  }, [enqueueSnackbar, error, ping]);
-
-  useEffect(() => {
-    if (mouse.x && start && isOpen(ws)) {
-      ws.send(JSON.stringify({ action: 'move head', payload: Math.round(mouse.x / 14.21) }));
+    if (mouse.x && start && isOpen(wsControl)) {
+      wsControl.send(JSON.stringify({ action: 'move head', payload: Math.round(mouse.x / 14.21) }));
     }
   }, [mouse.x, start]);
 
   useEffect(() => {
-    if (start && isOpen(ws)) {
+    if (start && isOpen(wsControl)) {
       const keys = [
         { key: 'w', value: keyW },
         { key: 'a', value: keyA },
@@ -86,7 +83,7 @@ export const Controls: React.FC = () => {
       ];
 
       const pressedKey = keys.find((key) => key.value);
-      ws.send(JSON.stringify({ action: 'keypress', payload: pressedKey }));
+      wsControl.send(JSON.stringify({ action: 'keypress', payload: pressedKey }));
     }
   }, [start, keyW, keyA, keyS, keyD]);
 
@@ -94,70 +91,51 @@ export const Controls: React.FC = () => {
     setStart(true);
     setError(null);
 
-    ws.addEventListener('message', handlePingData);
-
-    if (isOpen(ws)) {
-      ws.send(JSON.stringify({ action: 'start' }));
+    if (isOpen(wsControl)) {
+      wsControl.send(JSON.stringify({ action: 'start' }));
     }
   };
 
   const handleClickStop = useCallback(() => {
-    if (isOpen(ws)) {
-      ws.send(JSON.stringify({ action: 'stop' }));
+    if (isOpen(wsControl)) {
+      wsControl.send(JSON.stringify({ action: 'stop' }));
     }
 
     setStart(false);
-    ws.removeEventListener('message', handlePingData);
   }, []);
-
-  const handlePingData = ({ data }: MessageEvent) => {
-    console.log(data);
-    const { action, payload } = JSON.parse(data);
-
-    if (action === 'ping') {
-      setPing(payload);
-    }
-  };
 
   useEffect(() => {
     return () => handleClickStop();
   }, [handleClickStop]);
 
-  ws.addEventListener('error', () => setError('Error connecting to controls'));
-
   return (
-    <Grid container className={classes.root} ref={mouseRef}>
-      <Video start={start} setStart={setStart} setError={setError} />
-      <Grid container justify="center" alignItems="center">
-        <Grid item>{!start && <Avatar alt="Herbie" src="../assets/herbie.jpg" className={classes.avatar} />}</Grid>
-      </Grid>
-
-      <Grid container justify="center" style={start ? { position: 'absolute', bottom: 0, zIndex: 1000 } : undefined}>
-        <Grid item>
-          <Button
-            classes={{ root: classes.button }}
-            variant="contained"
-            color="primary"
-            size="large"
-            startIcon={<StartIcon />}
-            onClick={handleClickStart}
-          >
-            Start
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button
-            classes={{ root: classes.button }}
-            variant="contained"
-            color="primary"
-            size="large"
-            startIcon={<StopIcon />}
-            onClick={handleClickStop}
-          >
-            Stop
-          </Button>
-        </Grid>
-      </Grid>
-    </Grid>
+    <Container maxWidth={false} className={classes.root} ref={mouseRef}>
+      <Box display="flex" justifyContent="center" alignItems="center" margin="2rem">
+        <Icon path={mdiRobot} size={2} title="Herbie" className={classes.logo} />
+        <Typography variant="h3" className={classes.logoText}>
+          Herbie
+        </Typography>
+      </Box>
+      <Box display="flex" justifyContent="center" alignItems="center" flex="1">
+        <Video start={start} setStart={setStart} />
+        {!start && (
+          <Avatar
+            variant="rounded"
+            classes={{ rounded: classes.rounded }}
+            alt="Herbie"
+            src="../assets/herbie.jpg"
+            className={classes.avatar}
+          />
+        )}
+      </Box>
+      <Box display="flex" justifyContent="center">
+        <IconButton onClick={handleClickStart} classes={{ root: classes.button }}>
+          <StartIcon fontSize="large" />
+        </IconButton>
+        <IconButton onClick={handleClickStop} classes={{ root: classes.button }}>
+          <StopIcon fontSize="large" />
+        </IconButton>
+      </Box>
+    </Container>
   );
 };
