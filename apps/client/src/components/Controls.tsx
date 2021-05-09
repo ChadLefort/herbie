@@ -15,7 +15,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { wsControl } from '../app/ws';
 import { isOpen } from '../common/helpers';
-import { useError } from '../common/hooks/useError';
+import { useErrorControls } from '../common/hooks/useErrorControls';
 import { useFullscreen } from '../common/hooks/useFullscreen';
 import { useKeyPress } from '../common/hooks/useKeyPress';
 import { usePing } from '../common/hooks/usePing';
@@ -65,7 +65,7 @@ export const Controls: React.FC = () => {
   const classes = useStyles();
   const [start, setStart] = useState<boolean | undefined>(undefined);
   const { isFullscreen, setFullscreen } = useFullscreen(mouseRef);
-  const { setError } = useError();
+  const { setError } = useErrorControls();
 
   usePing(start);
 

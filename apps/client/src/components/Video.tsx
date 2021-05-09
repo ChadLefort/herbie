@@ -1,22 +1,20 @@
 import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Grid from '@material-ui/core/Grid';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import React, { useEffect, useState } from 'react';
 
 import { wsVideoURL } from '../app/ws';
-import { useError } from '../common/hooks/useError';
+import { useErrorVideo } from '../common/hooks/useErrorVideo';
 import { Signal } from '../common/Signal';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     container: {
-      width: '50%',
+      width: '100vh',
       overflow: 'hidden'
     },
     video: {
-      width: '100.2%',
-      height: '100%',
+      width: '100%',
       borderRadius: theme.spacing(3)
     }
   })
@@ -31,23 +29,24 @@ export const Video: React.FC<Props> = ({ start, setStart }) => {
   const classes = useStyles();
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { setError } = useError();
+  const { setError } = useErrorVideo();
 
   const onLoading = () => setIsLoading(false);
 
   useEffect(() => {
+    const ref = videoRef?.current;
     let signal: Signal | null = null;
 
     const onStream = (stream: MediaStream) => {
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
+      if (ref) {
+        ref.srcObject = stream;
+        ref.play();
       }
     };
 
     const onClose = () => {
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
+      if (ref) {
+        ref.srcObject = null;
       }
 
       signal?.hangup();
@@ -57,7 +56,7 @@ export const Video: React.FC<Props> = ({ start, setStart }) => {
     };
 
     if (start) {
-      videoRef.current?.addEventListener('loadeddata', onLoading);
+      ref?.addEventListener('loadeddata', onLoading);
       signal = new Signal(wsVideoURL, onStream, onClose, setError);
       setIsLoading(true);
     }
@@ -65,26 +64,24 @@ export const Video: React.FC<Props> = ({ start, setStart }) => {
     return () => {
       signal?.hangup();
       signal = null;
-      videoRef?.current?.removeEventListener('loadeddata', onLoading);
+      ref?.removeEventListener('loadeddata', onLoading);
     };
   }, [start, setStart, setError]);
 
   return start ? (
-    <Grid container justify="center" alignItems="center" style={{ height: '100%' }}>
-      <div className={classes.container}>
-        <video
-          ref={videoRef}
-          className={classes.video}
-          preload="auto"
-          autoPlay
-          style={isLoading ? { display: 'none' } : undefined}
-        />
-        {isLoading && (
-          <Box display="flex" justifyContent="center">
-            <CircularProgress size={100} />
-          </Box>
-        )}
-      </div>
-    </Grid>
+    <Box className={classes.container}>
+      <video
+        ref={videoRef}
+        className={classes.video}
+        preload="auto"
+        autoPlay
+        style={isLoading ? { display: 'none' } : undefined}
+      />
+      {isLoading && (
+        <Box display="flex" justifyContent="center">
+          <CircularProgress size={100} />
+        </Box>
+      )}
+    </Box>
   ) : null;
 };
