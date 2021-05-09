@@ -1,5 +1,6 @@
+import Box from '@material-ui/core/Box';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Grid from '@material-ui/core/Grid';
-import LinearProgress from '@material-ui/core/LinearProgress';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import React, { useEffect, useState } from 'react';
 
@@ -78,7 +79,11 @@ export const Video: React.FC<Props> = ({ start, setStart }) => {
           autoPlay
           style={isLoading ? { display: 'none' } : undefined}
         />
-        {isLoading && <LinearProgress />}
+        {isLoading && (
+          <Box display="flex" justifyContent="center">
+            <CircularProgress size={100} />
+          </Box>
+        )}
       </div>
     </Grid>
   ) : null;

@@ -1,9 +1,11 @@
-import Avatar from '@material-ui/core/Avatar';
 import Box from '@material-ui/core/Box';
+import { blue } from '@material-ui/core/colors';
 import Container from '@material-ui/core/Container';
 import IconButton from '@material-ui/core/IconButton';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import FullscreenIcon from '@material-ui/icons/Fullscreen';
+import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
 import StartIcon from '@material-ui/icons/PlayArrow';
 import StopIcon from '@material-ui/icons/Stop';
 import { mdiRobot } from '@mdi/js';
@@ -14,6 +16,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { wsControl } from '../app/ws';
 import { isOpen } from '../common/helpers';
 import { useError } from '../common/hooks/useError';
+import { useFullscreen } from '../common/hooks/useFullscreen';
 import { useKeyPress } from '../common/hooks/useKeyPress';
 import { usePing } from '../common/hooks/usePing';
 import { Video } from './Video';
@@ -44,15 +47,24 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     rounded: {
       borderRadius: theme.spacing(3)
+    },
+    hero: {
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundSize: 'cover',
+      position: 'relative',
+      borderRadius: theme.spacing(3),
+      width: '100%',
+      height: '100%'
     }
   })
 );
 
 export const Controls: React.FC = () => {
+  const mouseRef = React.useRef(null);
   const classes = useStyles();
   const [start, setStart] = useState<boolean | undefined>(undefined);
-
-  const mouseRef = React.useRef(null);
+  const { isFullscreen, setFullscreen } = useFullscreen(mouseRef);
   const { setError } = useError();
 
   usePing(start);
@@ -104,6 +116,8 @@ export const Controls: React.FC = () => {
     setStart(false);
   }, []);
 
+  const handleExitFullscreen = () => document.exitFullscreen();
+
   useEffect(() => {
     return () => handleClickStop();
   }, [handleClickStop]);
@@ -111,7 +125,7 @@ export const Controls: React.FC = () => {
   return (
     <Container maxWidth={false} className={classes.root} ref={mouseRef}>
       <Box display="flex" justifyContent="center" alignItems="center" margin="2rem">
-        <Icon path={mdiRobot} size={2} title="Herbie" className={classes.logo} />
+        <Icon path={mdiRobot} size={2} color={blue[900]} title="Herbie" className={classes.logo} />
         <Typography variant="h3" className={classes.logoText}>
           Herbie
         </Typography>
@@ -119,13 +133,9 @@ export const Controls: React.FC = () => {
       <Box display="flex" justifyContent="center" alignItems="center" flex="1">
         <Video start={start} setStart={setStart} />
         {!start && (
-          <Avatar
-            variant="rounded"
-            classes={{ rounded: classes.rounded }}
-            alt="Herbie"
-            src="../assets/herbie.jpg"
-            className={classes.avatar}
-          />
+          <Container maxWidth="md" style={{ height: '100%' }}>
+            <Box className={classes.hero} style={{ backgroundImage: `url('../assets/herbie.jpg')` }} />
+          </Container>
         )}
       </Box>
       <Box display="flex" justifyContent="center">
@@ -135,6 +145,15 @@ export const Controls: React.FC = () => {
         <IconButton onClick={handleClickStop} classes={{ root: classes.button }}>
           <StopIcon fontSize="large" />
         </IconButton>
+        {isFullscreen ? (
+          <IconButton onClick={handleExitFullscreen} classes={{ root: classes.button }}>
+            <FullscreenExitIcon fontSize="large" />
+          </IconButton>
+        ) : (
+          <IconButton onClick={setFullscreen} classes={{ root: classes.button }}>
+            <FullscreenIcon fontSize="large" />
+          </IconButton>
+        )}
       </Box>
     </Container>
   );

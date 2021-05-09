@@ -1,4 +1,4 @@
-import { green, grey } from '@material-ui/core/colors';
+import { blue, grey } from '@material-ui/core/colors';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { Theme as MuiTheme, ThemeProvider, createMuiTheme, createStyles, makeStyles } from '@material-ui/core/styles';
 import { SnackbarProvider } from 'notistack';
@@ -25,7 +25,7 @@ export const App: React.FC = () => {
   const muiTheme = createMuiTheme({
     palette: {
       primary: {
-        main: green[900]
+        main: blue[900]
       },
       secondary: {
         main: grey[500]
