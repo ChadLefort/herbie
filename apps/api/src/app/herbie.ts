@@ -1,5 +1,5 @@
 import { IKeyMap } from '@herbie/types';
-import { send } from '@herbie/utils';
+import { ping, send } from '@herbie/utils';
 import { Board, Proximity, Servo, Servos } from 'johnny-five';
 import PiIO from 'pi-io';
 import ws from 'ws';
@@ -77,7 +77,7 @@ export class Herbie {
     eyes.on('change', ({ inches }) => {
       if (this.hasStarted) {
         logger.info(`PING))): ${inches} inches`);
-        send(ws, { action: 'ping', payload: inches }, logger);
+        send(ws, ping(inches), logger);
       }
     });
 

@@ -1,6 +1,7 @@
 /* eslint-disable no-case-declarations */
 
-import { isOpen } from '@herbie/utils';
+import { What } from '@herbie/types';
+import { send } from '@herbie/utils';
 
 export class Signal {
   ws: WebSocket | null = null;
@@ -20,9 +21,8 @@ export class Signal {
   }
 
   hangup = () => {
-    if (this.ws && isOpen(this.ws)) {
-      const request = { what: 'hangup' };
-      this.ws.send(JSON.stringify(request));
+    if (this.ws) {
+      send(this.ws, { what: What.hangup });
     }
   };
 
@@ -55,35 +55,31 @@ export class Signal {
               candidate: event.candidate.candidate
             };
 
-            const request = {
-              what: 'addIceCandidate',
+            send(this.ws, {
+              what: What.addIceCandidate,
               data: JSON.stringify(candidate)
-            };
-
-            this.ws?.send(JSON.stringify(request));
+            });
           }
         };
 
         this.pc.ontrack = (event) => onStream(event.streams[0]);
 
-        const request = {
-          what: 'call',
+        send(this.ws, {
+          what: What.call,
           options: {
             force_hw_vcodec: true,
             vformat: 30 /* 30=640x480, 30 fps */,
             trickle_ice: false
           }
-        };
-
-        this.ws?.send(JSON.stringify(request));
+        });
       };
 
       this.ws.onmessage = async (event) => {
-        const msg = JSON.parse(event.data);
+        const msg: { what: What; data: any } = JSON.parse(event.data);
         const { what, data } = msg;
 
         switch (what) {
-          case 'offer':
+          case What.offer:
             const mediaConstraints: RTCOfferOptions = {
               offerToReceiveAudio: false,
               offerToReceiveVideo: true
@@ -99,12 +95,11 @@ export class Signal {
 
                 if (sessionDescription) {
                   this.pc?.setLocalDescription(sessionDescription);
-                  const request = {
-                    what: 'answer',
-                    data: JSON.stringify(sessionDescription)
-                  };
 
-                  this.ws?.send(JSON.stringify(request));
+                  send(this.ws, {
+                    what: What.answer,
+                    data: JSON.stringify(sessionDescription)
+                  });
                 }
               } catch (error) {
                 if (onError) {
@@ -119,14 +114,14 @@ export class Signal {
               this.ws?.close();
             }
             break;
-          case 'answer':
+          case What.answer:
             break;
-          case 'message':
+          case What.message:
             if (onMessage) {
               onMessage(msg.data);
             }
             break;
-          case 'iceCandidate':
+          case What.iceCandidate:
             if (!msg.data) {
               break;
             }
@@ -140,7 +135,7 @@ export class Signal {
             this.iceCandidates.push(candidate);
             this.addIceCandidates();
             break;
-          case 'iceCandidates':
+          case What.iceCandidates:
             const candidates: RTCIceCandidate[] = JSON.parse(msg.data);
 
             candidates.forEach((elt) => {

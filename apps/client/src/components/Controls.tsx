@@ -1,5 +1,5 @@
-import { IKeyMap } from '@herbie/types';
-import { isOpen } from '@herbie/utils';
+import { Action, ControlAction, IKeyMap } from '@herbie/types';
+import { moveHead, moveWheels, send, startHerbie, stopHerbie } from '@herbie/utils';
 import Box from '@material-ui/core/Box';
 import { blue } from '@material-ui/core/colors';
 import Container from '@material-ui/core/Container';
@@ -84,13 +84,13 @@ export const Controls: React.FC = () => {
   });
 
   useEffect(() => {
-    if (mouse.x && start && isOpen(wsControl)) {
-      wsControl.send(JSON.stringify({ action: 'move head', payload: Math.round(mouse.x / 14.21) }));
+    if (mouse.x && start) {
+      send(wsControl, moveHead(mouse.x));
     }
   }, [mouse.x, start]);
 
   useEffect(() => {
-    if (start && isOpen(wsControl)) {
+    if (start) {
       const keys: IKeyMap[] = [
         { key: 'w', value: keyW },
         { key: 'a', value: keyA },
@@ -99,24 +99,19 @@ export const Controls: React.FC = () => {
       ];
 
       const pressedKey = keys.find((key) => key.value);
-      wsControl.send(JSON.stringify({ action: 'keypress', payload: pressedKey }));
+
+      send(wsControl, moveWheels(pressedKey));
     }
   }, [start, keyW, keyA, keyS, keyD]);
 
   const handleClickStart = () => {
     setStart(true);
     setError(null);
-
-    if (isOpen(wsControl)) {
-      wsControl.send(JSON.stringify({ action: 'start' }));
-    }
+    send(wsControl, startHerbie());
   };
 
   const handleClickStop = () => {
-    if (isOpen(wsControl)) {
-      wsControl.send(JSON.stringify({ action: 'stop' }));
-    }
-
+    send(wsControl, stopHerbie());
     setStart(false);
   };
 
@@ -125,14 +120,14 @@ export const Controls: React.FC = () => {
   useEffect(() => {
     const handleMaxClients = ({ data }: MessageEvent) => {
       let key: SnackbarKey | undefined;
-      const { action, payload } = JSON.parse(data);
+      const { action, payload } = JSON.parse(data) as ControlAction<string>;
 
-      if (action === 'cannot-control') {
+      if (action === Action.cannotControl) {
         key = enqueueSnackbar(payload, { variant: 'info', persist: true });
         setMaxClients(true);
       }
 
-      if (action === 'can-control') {
+      if (action === Action.canControl) {
         closeSnackbar(key);
         enqueueSnackbar(payload, { variant: 'info' });
         setMaxClients(false);

@@ -1,5 +1,4 @@
-import { Action } from '@herbie/types';
-import { send } from '@herbie/utils';
+import { Action, ControlAction } from '@herbie/types';
 import ws from 'ws';
 
 import { Herbie } from './herbie';
@@ -7,21 +6,21 @@ import { logger } from './logger';
 
 export const controlGateway = (herbie: Herbie) => (ws: ws) => {
   ws.on('message', (req: string) => {
-    const { action, payload } = JSON.parse(req) as Action;
+    const { action, payload } = JSON.parse(req) as ControlAction;
 
     logger.info(req);
 
     switch (action) {
-      case 'start':
+      case Action.start:
         herbie.start(ws);
         break;
-      case 'stop':
+      case Action.stop:
         herbie.stop();
         break;
-      case 'move head':
+      case Action.moveHead:
         herbie.moveHead(parseInt(payload));
         break;
-      case 'keypress':
+      case Action.keypress:
         herbie.keyPress(payload);
         break;
     }

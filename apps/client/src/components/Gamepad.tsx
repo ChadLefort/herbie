@@ -1,3 +1,5 @@
+import { IKeyMap } from '@herbie/types';
+import { moveHead, moveWheels, send } from '@herbie/utils';
 import React, { useEffect, useState } from 'react';
 import { useGamepads } from 'react-gamepads';
 
@@ -30,7 +32,7 @@ export const Gamepad: React.FC = () => {
   useEffect(() => {
     console.log('move head', value);
 
-    wsControl.send(JSON.stringify({ action: 'move head', payload: value }));
+    send(wsControl, moveHead(value));
   }, [value]);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export const Gamepad: React.FC = () => {
       down: controller?.buttons[13]?.pressed
     };
 
-    const keys = [
+    const keys: IKeyMap[] = [
       { key: 'w', value: dPad.up || controller?.axes[1] === -1 },
       { key: 'a', value: dPad.left || controller?.axes[0] === -1 },
       { key: 's', value: dPad.down || controller?.axes[1] === 1 },
@@ -49,7 +51,7 @@ export const Gamepad: React.FC = () => {
     ];
 
     const pressedKey = keys.find((key) => key.value);
-    wsControl.send(JSON.stringify({ action: 'keypress', payload: pressedKey }));
+    send(wsControl, moveWheels(pressedKey));
   }, [controller]);
 
   return null;

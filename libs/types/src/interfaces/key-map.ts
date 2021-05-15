@@ -1,4 +1,4 @@
 export interface IKeyMap {
-  key: string;
+  key: 'w' | 'a' | 's' | 'd';
   value: boolean;
 }

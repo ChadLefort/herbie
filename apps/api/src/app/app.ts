@@ -1,7 +1,7 @@
 import path from 'path';
 
 import { IClient } from '@herbie/types';
-import { send } from '@herbie/utils';
+import { canControl, cannotControl, send } from '@herbie/utils';
 import express from 'express';
 import expressWs from 'express-ws';
 import { v4 as uuidv4 } from 'uuid';
@@ -37,7 +37,7 @@ export class App {
 
       if (this.clients.length > 1) {
         const client = this.clients.find(({ id }) => id === userId);
-        send(client.ws, { action: 'cannot-control', payload: 'Only one client can be connected at a time.' }, logger);
+        send(client.ws, cannotControl(), logger);
       } else {
         this.clientControlling = userId;
         logger.info(`Client controlling Herbie: ${userId}`);
@@ -53,7 +53,7 @@ export class App {
 
           if (client.id !== this.clientControlling) {
             logger.info(`Client controlling Herbie: ${client.id}`);
-            send(client.ws, { action: 'can-control', payload: 'You can control Herbie!' }, logger);
+            send(client.ws, canControl(), logger);
           }
 
           this.clientControlling = client.id;
