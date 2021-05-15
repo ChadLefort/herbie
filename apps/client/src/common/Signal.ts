@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
 
-import { isOpen } from './helpers';
+import { isOpen } from '@herbie/utils';
 
 export class Signal {
   ws: WebSocket | null = null;

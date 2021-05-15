@@ -15,7 +15,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "esModuleInterop": true,
-    "paths": {}
+    "paths": {
+      "@herbie/utils": ["libs/utils/src/index.ts"],
+      "@herbie/types": ["libs/types/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

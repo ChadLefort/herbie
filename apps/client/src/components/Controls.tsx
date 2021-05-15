@@ -1,3 +1,5 @@
+import { IKeyMap } from '@herbie/types';
+import { isOpen } from '@herbie/utils';
 import Box from '@material-ui/core/Box';
 import { blue } from '@material-ui/core/colors';
 import Container from '@material-ui/core/Container';
@@ -15,7 +17,6 @@ import { SnackbarKey, useSnackbar } from 'notistack';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { wsControl } from '../app/ws';
-import { isOpen } from '../common/helpers';
 import { useErrorControls } from '../common/hooks/useErrorControls';
 import { useFullscreen } from '../common/hooks/useFullscreen';
 import { useKeyPress } from '../common/hooks/useKeyPress';
@@ -90,7 +91,7 @@ export const Controls: React.FC = () => {
 
   useEffect(() => {
     if (start && isOpen(wsControl)) {
-      const keys = [
+      const keys: IKeyMap[] = [
         { key: 'w', value: keyW },
         { key: 'a', value: keyA },
         { key: 's', value: keyS },

@@ -1,3 +1,5 @@
+import { IKeyMap } from '@herbie/types';
+import { send } from '@herbie/utils';
 import { Board, Proximity, Servo, Servos } from 'johnny-five';
 import PiIO from 'pi-io';
 import ws from 'ws';
@@ -7,7 +9,7 @@ import { logger } from './logger';
 const servoController = 'PCA9685';
 const proximityController = 'HCSR04';
 
-export interface IInformation {
+interface IInformation {
   name: string;
   nickname?: string;
   age: number;
@@ -24,11 +26,6 @@ interface IWheels {
   left: Servo;
   right: Servo;
   both?: Servos;
-}
-
-export interface IKeyMap {
-  key: string;
-  value: boolean;
 }
 
 export class Herbie {
@@ -80,14 +77,7 @@ export class Herbie {
     eyes.on('change', ({ inches }) => {
       if (this.hasStarted) {
         logger.info(`PING))): ${inches} inches`);
-
-        try {
-          if (ws.readyState != ws.CLOSED) {
-            ws.send(JSON.stringify({ action: 'ping', payload: inches }));
-          }
-        } catch (error) {
-          logger.error(error.message);
-        }
+        send(ws, { action: 'ping', payload: inches }, logger);
       }
     });
 
