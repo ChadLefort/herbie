@@ -5,6 +5,7 @@ import { SnackbarProvider } from 'notistack';
 import React from 'react';
 
 import { Controls } from '../components/Controls';
+import { Gamepad } from '../components/Gamepad';
 
 export const App: React.FC = () => {
   const muiTheme = createMuiTheme({
@@ -22,8 +23,9 @@ export const App: React.FC = () => {
   return (
     <ThemeProvider theme={muiTheme}>
       <CssBaseline />
-      <SnackbarProvider preventDuplicate anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+      <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
         <Controls />
+        <Gamepad />
       </SnackbarProvider>
     </ThemeProvider>
   );

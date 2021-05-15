@@ -11,7 +11,8 @@ import StopIcon from '@material-ui/icons/Stop';
 import { mdiRobot } from '@mdi/js';
 import Icon from '@mdi/react';
 import useMouse from '@react-hook/mouse-position';
-import React, { useCallback, useEffect, useState } from 'react';
+import { SnackbarKey, useSnackbar } from 'notistack';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { wsControl } from '../app/ws';
 import { isOpen } from '../common/helpers';
@@ -61,11 +62,13 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export const Controls: React.FC = () => {
-  const mouseRef = React.useRef(null);
+  const mouseRef = useRef(null);
   const classes = useStyles();
   const [start, setStart] = useState<boolean | undefined>(undefined);
+  const [maxClients, setMaxClients] = useState<boolean | undefined>(undefined);
   const { isFullscreen, setFullscreen } = useFullscreen(mouseRef);
   const { setError } = useErrorControls();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   usePing(start);
 
@@ -108,19 +111,40 @@ export const Controls: React.FC = () => {
     }
   };
 
-  const handleClickStop = useCallback(() => {
+  const handleClickStop = () => {
     if (isOpen(wsControl)) {
       wsControl.send(JSON.stringify({ action: 'stop' }));
     }
 
     setStart(false);
-  }, []);
+  };
 
   const handleExitFullscreen = () => document.exitFullscreen();
 
   useEffect(() => {
-    return () => handleClickStop();
-  }, [handleClickStop]);
+    const handleMaxClients = ({ data }: MessageEvent) => {
+      let key: SnackbarKey | undefined;
+      const { action, payload } = JSON.parse(data);
+
+      if (action === 'cannot-control') {
+        key = enqueueSnackbar(payload, { variant: 'info', persist: true });
+        setMaxClients(true);
+      }
+
+      if (action === 'can-control') {
+        closeSnackbar(key);
+        enqueueSnackbar(payload, { variant: 'info' });
+        setMaxClients(false);
+      }
+    };
+
+    wsControl.addEventListener('message', handleMaxClients);
+
+    return () => {
+      handleClickStop();
+      wsControl.removeEventListener('message', handleMaxClients);
+    };
+  }, []);
 
   return (
     <Container maxWidth={false} className={classes.root} ref={mouseRef}>
@@ -138,11 +162,12 @@ export const Controls: React.FC = () => {
           </Container>
         )}
       </Box>
+
       <Box display="flex" justifyContent="center">
-        <IconButton onClick={handleClickStart} classes={{ root: classes.button }}>
+        <IconButton onClick={handleClickStart} classes={{ root: classes.button }} disabled={maxClients}>
           <StartIcon fontSize="large" />
         </IconButton>
-        <IconButton onClick={handleClickStop} classes={{ root: classes.button }}>
+        <IconButton onClick={handleClickStop} classes={{ root: classes.button }} disabled={maxClients}>
           <StopIcon fontSize="large" />
         </IconButton>
         {isFullscreen ? (

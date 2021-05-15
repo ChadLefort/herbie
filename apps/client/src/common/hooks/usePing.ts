@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { wsControl } from '../../app/ws';
 
-export function usePing(start) {
+export function usePing(start: boolean) {
   const { enqueueSnackbar } = useSnackbar();
   const [ping, setPing] = useState<number | null>(null);
 
@@ -14,7 +14,6 @@ export function usePing(start) {
   }, [enqueueSnackbar, ping]);
 
   const handlePingData = ({ data }: MessageEvent) => {
-    console.log(data);
     const { action, payload } = JSON.parse(data);
 
     if (action === 'ping') {
