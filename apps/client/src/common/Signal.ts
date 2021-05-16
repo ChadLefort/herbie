@@ -22,7 +22,7 @@ export class Signal {
 
   hangup = () => {
     if (this.ws) {
-      send(this.ws, { what: What.hangup });
+      send(this.ws, { what: What.Hangup });
     }
   };
 
@@ -56,7 +56,7 @@ export class Signal {
             };
 
             send(this.ws, {
-              what: What.addIceCandidate,
+              what: What.AddIceCandidate,
               data: JSON.stringify(candidate)
             });
           }
@@ -65,7 +65,7 @@ export class Signal {
         this.pc.ontrack = (event) => onStream(event.streams[0]);
 
         send(this.ws, {
-          what: What.call,
+          what: What.Call,
           options: {
             force_hw_vcodec: true,
             vformat: 30 /* 30=640x480, 30 fps */,
@@ -79,7 +79,7 @@ export class Signal {
         const { what, data } = msg;
 
         switch (what) {
-          case What.offer:
+          case What.Offer:
             const mediaConstraints: RTCOfferOptions = {
               offerToReceiveAudio: false,
               offerToReceiveVideo: true
@@ -97,7 +97,7 @@ export class Signal {
                   this.pc?.setLocalDescription(sessionDescription);
 
                   send(this.ws, {
-                    what: What.answer,
+                    what: What.Answer,
                     data: JSON.stringify(sessionDescription)
                   });
                 }
@@ -114,14 +114,14 @@ export class Signal {
               this.ws?.close();
             }
             break;
-          case What.answer:
+          case What.Answer:
             break;
-          case What.message:
+          case What.Message:
             if (onMessage) {
               onMessage(msg.data);
             }
             break;
-          case What.iceCandidate:
+          case What.IceCandidate:
             if (!msg.data) {
               break;
             }
@@ -135,7 +135,7 @@ export class Signal {
             this.iceCandidates.push(candidate);
             this.addIceCandidates();
             break;
-          case What.iceCandidates:
+          case What.IceCandidates:
             const candidates: RTCIceCandidate[] = JSON.parse(msg.data);
 
             candidates.forEach((elt) => {

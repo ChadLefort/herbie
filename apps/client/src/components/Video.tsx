@@ -3,6 +3,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import React, { useEffect, useState } from 'react';
 
+import { useAppSelector } from '../app/store';
 import { wsVideoURL } from '../app/ws';
 import { useErrorVideo } from '../common/hooks/useErrorVideo';
 import { Signal } from '../common/Signal';
@@ -20,12 +21,8 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-type Props = {
-  start?: boolean;
-  setStart: React.Dispatch<React.SetStateAction<boolean | undefined>>;
-};
-
-export const Video: React.FC<Props> = ({ start, setStart }) => {
+export const Video: React.FC = () => {
+  const { hasStarted } = useAppSelector((state) => state.controls);
   const classes = useStyles();
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,11 +48,9 @@ export const Video: React.FC<Props> = ({ start, setStart }) => {
 
       signal?.hangup();
       signal = null;
-
-      setStart(false);
     };
 
-    if (start) {
+    if (hasStarted) {
       ref?.addEventListener('loadeddata', onLoading);
       signal = new Signal(wsVideoURL, onStream, onClose, setError);
       setIsLoading(true);
@@ -66,9 +61,9 @@ export const Video: React.FC<Props> = ({ start, setStart }) => {
       signal = null;
       ref?.removeEventListener('loadeddata', onLoading);
     };
-  }, [start, setStart, setError]);
+  }, [hasStarted, setError]);
 
-  return start ? (
+  return hasStarted ? (
     <Box className={classes.container}>
       <video
         ref={videoRef}

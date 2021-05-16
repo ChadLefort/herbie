@@ -1,12 +1,12 @@
 export enum What {
-  answer = 'answer',
-  hangup = 'hangup',
-  addIceCandidate = 'addIceCandidate',
-  call = 'call',
-  offer = 'offer',
-  message = 'message',
-  iceCandidate = 'iceCandidate',
-  iceCandidates = 'iceCandidates'
+  Answer = 'answer',
+  Hangup = 'hangup',
+  AddIceCandidate = 'addIceCandidate',
+  Call = 'call',
+  Offer = 'offer',
+  Message = 'message',
+  IceCandidate = 'iceCandidate',
+  IceCandidates = 'iceCandidates'
 }
 
 export type VideoAction = {

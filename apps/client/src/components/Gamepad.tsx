@@ -3,7 +3,7 @@ import { moveHead, moveWheels, send } from '@herbie/utils';
 import React, { useEffect, useState } from 'react';
 import { useGamepads } from 'react-gamepads';
 
-import { wsControl } from '../app/ws';
+// import { wsControl } from '../app/ws';
 
 interface GamepadRef {
   [key: number]: Gamepad;
@@ -32,7 +32,7 @@ export const Gamepad: React.FC = () => {
   useEffect(() => {
     console.log('move head', value);
 
-    send(wsControl, moveHead(value));
+    // send(wsControl, moveHead(value));
   }, [value]);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export const Gamepad: React.FC = () => {
     ];
 
     const pressedKey = keys.find((key) => key.value);
-    send(wsControl, moveWheels(pressedKey));
+    // send(wsControl, moveWheels(pressedKey));
   }, [controller]);
 
   return null;

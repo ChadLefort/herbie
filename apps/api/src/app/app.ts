@@ -39,8 +39,11 @@ export class App {
         const client = this.clients.find(({ id }) => id === userId);
         send(client.ws, cannotControl(), logger);
       } else {
-        this.clientControlling = userId;
-        logger.info(`Client controlling Herbie: ${userId}`);
+        const [client] = this.clients;
+
+        this.clientControlling = client.id;
+        logger.info(`Client controlling Herbie: ${client.id}`);
+        send(client.ws, canControl(), logger);
         this.express.ws('/herbie/control', controlGateway(herbie));
       }
 

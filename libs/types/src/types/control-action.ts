@@ -1,14 +1,14 @@
-export enum Action {
-  start = 'start',
-  stop = 'stop',
-  moveHead = 'move head',
-  keypress = 'keypress',
-  ping = 'ping',
-  canControl = 'can control',
-  cannotControl = 'cannot control'
+export enum HerbieControlWebSocketAction {
+  Start = 'start',
+  Stop = 'stop',
+  MoveHead = 'move head',
+  Keypress = 'keypress',
+  Ping = 'ping',
+  CanControl = 'can control',
+  CannotControl = 'cannot control'
 }
 
 export type ControlAction<T = any> = {
-  action: Action;
+  action: HerbieControlWebSocketAction;
   payload?: T;
 };

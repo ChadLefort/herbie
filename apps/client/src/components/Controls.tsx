@@ -1,5 +1,4 @@
-import { Action, ControlAction, IKeyMap } from '@herbie/types';
-import { moveHead, moveWheels, send, startHerbie, stopHerbie } from '@herbie/utils';
+import { HerbieControlWebSocketAction as Action, ControlAction, IKeyMap } from '@herbie/types';
 import Box from '@material-ui/core/Box';
 import { blue } from '@material-ui/core/colors';
 import Container from '@material-ui/core/Container';
@@ -16,7 +15,8 @@ import useMouse from '@react-hook/mouse-position';
 import { SnackbarKey, useSnackbar } from 'notistack';
 import React, { useEffect, useRef, useState } from 'react';
 
-import { wsControl } from '../app/ws';
+import { moveHead, moveWheels, startHerbie, stopHerbie } from '../app/controls.slice';
+import { useAppDispatch, useAppSelector } from '../app/store';
 import { useErrorControls } from '../common/hooks/useErrorControls';
 import { useFullscreen } from '../common/hooks/useFullscreen';
 import { useKeyPress } from '../common/hooks/useKeyPress';
@@ -65,18 +65,20 @@ const useStyles = makeStyles((theme: Theme) =>
 export const Controls: React.FC = () => {
   const mouseRef = useRef(null);
   const classes = useStyles();
-  const [start, setStart] = useState<boolean | undefined>(undefined);
   const [maxClients, setMaxClients] = useState<boolean | undefined>(undefined);
   const { isFullscreen, setFullscreen } = useFullscreen(mouseRef);
-  const { error, setError } = useErrorControls();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const dispatch = useAppDispatch();
+  const { error } = useAppSelector((state) => state.connection);
+  const { control, hasStarted } = useAppSelector((state) => state.controls);
 
-  usePing(start);
+  useErrorControls();
+  usePing();
 
-  const keyW = useKeyPress('w', start || false);
-  const keyA = useKeyPress('a', start || false);
-  const keyS = useKeyPress('s', start || false);
-  const keyD = useKeyPress('d', start || false);
+  const keyW = useKeyPress('w', hasStarted || false);
+  const keyA = useKeyPress('a', hasStarted || false);
+  const keyS = useKeyPress('s', hasStarted || false);
+  const keyD = useKeyPress('d', hasStarted || false);
 
   const mouse = useMouse(mouseRef, {
     enterDelay: 100,
@@ -84,13 +86,13 @@ export const Controls: React.FC = () => {
   });
 
   useEffect(() => {
-    if (mouse.x && start) {
-      send(wsControl, moveHead(mouse.x));
+    if (mouse.x && hasStarted) {
+      dispatch(moveHead(mouse.x));
     }
-  }, [mouse.x, start]);
+  }, [dispatch, mouse.x, hasStarted]);
 
   useEffect(() => {
-    if (start) {
+    if (hasStarted) {
       const keys: IKeyMap[] = [
         { key: 'w', value: keyW },
         { key: 'a', value: keyA },
@@ -99,48 +101,36 @@ export const Controls: React.FC = () => {
       ];
 
       const pressedKey = keys.find((key) => key.value);
-
-      send(wsControl, moveWheels(pressedKey));
+      dispatch(moveWheels(pressedKey));
     }
-  }, [start, keyW, keyA, keyS, keyD]);
+  }, [hasStarted, keyW, keyA, keyS, keyD, dispatch]);
 
   const handleClickStart = () => {
-    setStart(true);
-    setError(null);
-    send(wsControl, startHerbie());
+    dispatch(startHerbie());
   };
 
   const handleClickStop = () => {
-    send(wsControl, stopHerbie());
-    setStart(false);
+    dispatch(stopHerbie());
   };
 
   const handleExitFullscreen = () => document.exitFullscreen();
 
   useEffect(() => {
-    const handleMaxClients = ({ data }: MessageEvent) => {
+    if (control) {
+      const { canControl, message } = control;
       let key: SnackbarKey | undefined;
-      const { action, payload } = JSON.parse(data) as ControlAction<string>;
-
-      if (action === Action.cannotControl) {
-        key = enqueueSnackbar(payload, { variant: 'info', persist: true });
+      if (canControl === false) {
+        key = enqueueSnackbar(message, { variant: 'info', persist: true });
         setMaxClients(true);
       }
 
-      if (action === Action.canControl) {
+      if (canControl === true) {
         closeSnackbar(key);
-        enqueueSnackbar(payload, { variant: 'info' });
+        enqueueSnackbar(message, { variant: 'info' });
         setMaxClients(false);
       }
-    };
-
-    wsControl.addEventListener('message', handleMaxClients);
-
-    return () => {
-      handleClickStop();
-      wsControl.removeEventListener('message', handleMaxClients);
-    };
-  }, []);
+    }
+  }, [control, closeSnackbar, enqueueSnackbar]);
 
   return (
     <Container maxWidth={false} className={classes.root} ref={mouseRef}>
@@ -151,8 +141,8 @@ export const Controls: React.FC = () => {
         </Typography>
       </Box>
       <Box display="flex" justifyContent="center" alignItems="center" flex="1">
-        <Video start={start} setStart={setStart} />
-        {!start && (
+        <Video />
+        {!hasStarted && (
           <Container maxWidth="lg" style={{ height: '100%' }}>
             <Box className={classes.hero} style={{ backgroundImage: `url('../assets/herbie.webp')` }} />
           </Container>
@@ -160,20 +150,12 @@ export const Controls: React.FC = () => {
       </Box>
 
       <Box display="flex" justifyContent="center">
-        {!start ? (
-          <IconButton
-            onClick={handleClickStart}
-            classes={{ root: classes.button }}
-            disabled={maxClients || Boolean(error)}
-          >
+        {!hasStarted ? (
+          <IconButton onClick={handleClickStart} classes={{ root: classes.button }} disabled={maxClients || error}>
             <StartIcon fontSize="large" />
           </IconButton>
         ) : (
-          <IconButton
-            onClick={handleClickStop}
-            classes={{ root: classes.button }}
-            disabled={maxClients || Boolean(error)}
-          >
+          <IconButton onClick={handleClickStop} classes={{ root: classes.button }} disabled={maxClients || error}>
             <StopIcon fontSize="large" />
           </IconButton>
         )}
