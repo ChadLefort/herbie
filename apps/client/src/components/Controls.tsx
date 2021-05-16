@@ -68,7 +68,7 @@ export const Controls: React.FC = () => {
   const [start, setStart] = useState<boolean | undefined>(undefined);
   const [maxClients, setMaxClients] = useState<boolean | undefined>(undefined);
   const { isFullscreen, setFullscreen } = useFullscreen(mouseRef);
-  const { setError } = useErrorControls();
+  const { error, setError } = useErrorControls();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   usePing(start);
@@ -153,19 +153,30 @@ export const Controls: React.FC = () => {
       <Box display="flex" justifyContent="center" alignItems="center" flex="1">
         <Video start={start} setStart={setStart} />
         {!start && (
-          <Container maxWidth="md" style={{ height: '100%' }}>
-            <Box className={classes.hero} style={{ backgroundImage: `url('../assets/herbie.jpg')` }} />
+          <Container maxWidth="lg" style={{ height: '100%' }}>
+            <Box className={classes.hero} style={{ backgroundImage: `url('../assets/herbie.webp')` }} />
           </Container>
         )}
       </Box>
 
       <Box display="flex" justifyContent="center">
-        <IconButton onClick={handleClickStart} classes={{ root: classes.button }} disabled={maxClients}>
-          <StartIcon fontSize="large" />
-        </IconButton>
-        <IconButton onClick={handleClickStop} classes={{ root: classes.button }} disabled={maxClients}>
-          <StopIcon fontSize="large" />
-        </IconButton>
+        {!start ? (
+          <IconButton
+            onClick={handleClickStart}
+            classes={{ root: classes.button }}
+            disabled={maxClients || Boolean(error)}
+          >
+            <StartIcon fontSize="large" />
+          </IconButton>
+        ) : (
+          <IconButton
+            onClick={handleClickStop}
+            classes={{ root: classes.button }}
+            disabled={maxClients || Boolean(error)}
+          >
+            <StopIcon fontSize="large" />
+          </IconButton>
+        )}
         {isFullscreen ? (
           <IconButton onClick={handleExitFullscreen} classes={{ root: classes.button }}>
             <FullscreenExitIcon fontSize="large" />
