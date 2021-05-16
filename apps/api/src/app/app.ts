@@ -62,6 +62,7 @@ export class App {
     });
 
     this.express.use(express.static(path.join(__dirname, '../client')));
+    this.express.use('/favicon.ico', express.static(path.join(__dirname, '../client/assets/favicon.ico')));
     this.express.get('/', (req, res) => res.sendFile(path.join(__dirname, '../client', 'index.html')));
   }
 }
