@@ -1,6 +1,8 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { AnyAction, ThunkAction, createSlice } from '@reduxjs/toolkit';
 
-import { startHerbie } from './controls.slice';
+import { startHerbie, stopHerbie } from './controls.slice';
+import { closeSnackbar, enqueueSnackbar, notificationsSelectors } from './notifications.slice';
+import { RootState } from './store';
 
 const name = 'herbie/connection';
 
@@ -14,12 +16,57 @@ export const initialState: State = {
   error: null
 };
 
+export const setConnection = (payload: boolean): ThunkAction<boolean, RootState, null, AnyAction> => (
+  dispatch,
+  getState
+) => {
+  dispatch(actions.setConnection(payload));
+
+  if (payload) {
+    dispatch(enqueueSnackbar({ message: 'Connected to controls server.', options: { variant: 'success' } }));
+
+    const message = 'Error with controls server.';
+    const errorNotification = notificationsSelectors
+      .selectAll(getState() as RootState)
+      .find((notification) => notification.message === message);
+
+    if (errorNotification) {
+      dispatch(closeSnackbar(errorNotification.id));
+    }
+  } else {
+    dispatch(stopHerbie());
+  }
+
+  return payload;
+};
+
+export const setError = (payload: boolean): ThunkAction<boolean, RootState, null, AnyAction> => (
+  dispatch,
+  getState
+) => {
+  dispatch(actions.setError(payload));
+
+  const message = 'Error with controls server.';
+  const errorNotification = notificationsSelectors
+    .selectAll(getState() as RootState)
+    .find((notification) => notification.message === message);
+
+  if (!errorNotification) {
+    dispatch(enqueueSnackbar({ message, options: { variant: 'error', persist: true } }));
+  }
+
+  return payload;
+};
+
 const connection = createSlice({
   name,
   initialState,
   reducers: {
     setConnection(state, action) {
-      state.error = null;
+      if (action.payload) {
+        state.error = null;
+      }
+
       state.connected = action.payload;
     },
     setError(state, action) {
@@ -33,7 +80,4 @@ const connection = createSlice({
   }
 });
 
-export const {
-  actions: { setConnection, setError },
-  reducer: connectionReducer
-} = connection;
+export const { actions, reducer: connectionReducer } = connection;

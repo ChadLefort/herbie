@@ -1,4 +1,4 @@
-import { HerbieControlWebSocketAction as Action, ControlAction, IKeyMap } from '@herbie/types';
+import { IKeyMap } from '@herbie/types';
 import Box from '@material-ui/core/Box';
 import { blue } from '@material-ui/core/colors';
 import Container from '@material-ui/core/Container';
@@ -12,15 +12,12 @@ import StopIcon from '@material-ui/icons/Stop';
 import { mdiRobot } from '@mdi/js';
 import Icon from '@mdi/react';
 import useMouse from '@react-hook/mouse-position';
-import { SnackbarKey, useSnackbar } from 'notistack';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { moveHead, moveWheels, startHerbie, stopHerbie } from '../app/controls.slice';
 import { useAppDispatch, useAppSelector } from '../app/store';
-import { useErrorControls } from '../common/hooks/useErrorControls';
 import { useFullscreen } from '../common/hooks/useFullscreen';
 import { useKeyPress } from '../common/hooks/useKeyPress';
-import { usePing } from '../common/hooks/usePing';
 import { Video } from './Video';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -65,15 +62,10 @@ const useStyles = makeStyles((theme: Theme) =>
 export const Controls: React.FC = () => {
   const mouseRef = useRef(null);
   const classes = useStyles();
-  const [maxClients, setMaxClients] = useState<boolean | undefined>(undefined);
   const { isFullscreen, setFullscreen } = useFullscreen(mouseRef);
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const dispatch = useAppDispatch();
   const { error } = useAppSelector((state) => state.connection);
   const { control, hasStarted } = useAppSelector((state) => state.controls);
-
-  useErrorControls();
-  usePing();
 
   const keyW = useKeyPress('w', hasStarted || false);
   const keyA = useKeyPress('a', hasStarted || false);
@@ -115,23 +107,6 @@ export const Controls: React.FC = () => {
 
   const handleExitFullscreen = () => document.exitFullscreen();
 
-  useEffect(() => {
-    if (control) {
-      const { canControl, message } = control;
-      let key: SnackbarKey | undefined;
-      if (canControl === false) {
-        key = enqueueSnackbar(message, { variant: 'info', persist: true });
-        setMaxClients(true);
-      }
-
-      if (canControl === true) {
-        closeSnackbar(key);
-        enqueueSnackbar(message, { variant: 'info' });
-        setMaxClients(false);
-      }
-    }
-  }, [control, closeSnackbar, enqueueSnackbar]);
-
   return (
     <Container maxWidth={false} className={classes.root} ref={mouseRef}>
       <Box display="flex" justifyContent="center" alignItems="center" margin="2rem">
@@ -141,7 +116,7 @@ export const Controls: React.FC = () => {
         </Typography>
       </Box>
       <Box display="flex" justifyContent="center" alignItems="center" flex="1">
-        <Video />
+        <Video hasStarted={hasStarted} />
         {!hasStarted && (
           <Container maxWidth="lg" style={{ height: '100%' }}>
             <Box className={classes.hero} style={{ backgroundImage: `url('../assets/herbie.webp')` }} />
@@ -151,11 +126,19 @@ export const Controls: React.FC = () => {
 
       <Box display="flex" justifyContent="center">
         {!hasStarted ? (
-          <IconButton onClick={handleClickStart} classes={{ root: classes.button }} disabled={maxClients || error}>
+          <IconButton
+            onClick={handleClickStart}
+            classes={{ root: classes.button }}
+            disabled={!control?.canControl || error}
+          >
             <StartIcon fontSize="large" />
           </IconButton>
         ) : (
-          <IconButton onClick={handleClickStop} classes={{ root: classes.button }} disabled={maxClients || error}>
+          <IconButton
+            onClick={handleClickStop}
+            classes={{ root: classes.button }}
+            disabled={!control?.canControl || error}
+          >
             <StopIcon fontSize="large" />
           </IconButton>
         )}

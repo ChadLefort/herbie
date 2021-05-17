@@ -6,6 +6,7 @@ import React from 'react';
 import { Provider } from 'react-redux';
 
 import { Controls } from '../components/Controls';
+import Notifier from '../components/Notifier';
 import { store } from './store';
 
 // import { Gamepad } from '../components/Gamepad';
@@ -27,7 +28,8 @@ export const App: React.FC = () => {
     <Provider store={store}>
       <ThemeProvider theme={muiTheme}>
         <CssBaseline />
-        <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+        <SnackbarProvider preventDuplicate anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+          <Notifier />
           <Controls />
           {/* <Gamepad /> */}
         </SnackbarProvider>

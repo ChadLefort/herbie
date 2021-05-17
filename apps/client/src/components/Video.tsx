@@ -21,8 +21,11 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export const Video: React.FC = () => {
-  const { hasStarted } = useAppSelector((state) => state.controls);
+type Props = {
+  hasStarted: boolean;
+};
+
+export const Video: React.FC<Props> = ({ hasStarted }) => {
   const classes = useStyles();
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [isLoading, setIsLoading] = useState(false);

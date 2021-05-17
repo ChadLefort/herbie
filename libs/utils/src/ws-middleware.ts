@@ -24,7 +24,7 @@ interface IWebSocketBuilder<D = any, S = any> {
   callbackMap: Map<string, Callback<D, S>>;
 }
 
-export function websocketBuilder<D = Dispatch, S = any>() {
+export function websocketBuilder<D = any, S = any>() {
   const callbackMap = new Map<string, Callback<D, S>>();
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const moduleReducer = () => {};

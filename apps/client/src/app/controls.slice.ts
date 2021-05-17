@@ -1,11 +1,63 @@
 import { HerbieControlWebSocketAction, IKeyMap } from '@herbie/types';
-import { createSlice } from '@reduxjs/toolkit';
+import { AnyAction, ThunkAction, createSlice } from '@reduxjs/toolkit';
+
+import { closeAllSnackbars, closeSnackbar, enqueueSnackbar, notificationsSelectors } from './notifications.slice';
+import { RootState } from './store';
+
+type Control = { canControl: boolean; message: string };
 
 const name = 'herbie/controls';
 
+export const setPing = (payload: number): ThunkAction<number, RootState, null, AnyAction> => (dispatch, getState) => {
+  dispatch(actions.setPing(payload));
+
+  const message = 'Oh snap! Herbie is close to an object.';
+  const pingNotification = notificationsSelectors
+    .selectAll(getState() as RootState)
+    .find((notification) => notification.message === message);
+
+  if (!pingNotification && payload <= 8) {
+    dispatch(enqueueSnackbar({ message, options: { variant: 'warning', persist: true } }));
+  }
+
+  if (pingNotification && payload > 8) {
+    dispatch(closeSnackbar(pingNotification.id));
+  }
+
+  return payload;
+};
+
+export const setControl = (payload: Control): ThunkAction<Control, RootState, null, AnyAction> => (
+  dispatch,
+  getState
+) => {
+  const message = 'Only one client can be connected at a time.';
+  const cannotControlNotification = notificationsSelectors
+    .selectAll(getState() as RootState)
+    .find((notification) => notification.message === message);
+
+  dispatch(actions.setControl(payload));
+
+  if (!payload.canControl && !cannotControlNotification) {
+    dispatch(enqueueSnackbar({ message, options: { variant: 'info', persist: true } }));
+  }
+
+  if (payload.canControl && cannotControlNotification) {
+    dispatch(closeSnackbar(cannotControlNotification.id));
+    dispatch(enqueueSnackbar({ message: payload.message, options: { variant: 'info' } }));
+  }
+
+  return payload;
+};
+
+export const stopHerbie = (): ThunkAction<void, RootState, null, AnyAction> => (dispatch) => {
+  dispatch(actions.stopHerbie());
+  dispatch(closeAllSnackbars());
+};
+
 type State = {
   hasStarted: boolean;
-  control: { canControl: boolean; message: string } | null;
+  control: Control | null;
   ping: number | null;
 };
 
@@ -78,7 +130,6 @@ const controls = createSlice({
   }
 });
 
-export const {
-  actions: { startHerbie, stopHerbie, setPing, setControl, moveHead, moveWheels },
-  reducer: controlsReducer
-} = controls;
+export const { actions, reducer: controlsReducer } = controls;
+
+export const { startHerbie, moveHead, moveWheels } = actions;
