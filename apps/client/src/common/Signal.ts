@@ -55,23 +55,25 @@ export class Signal {
               candidate: event.candidate.candidate
             };
 
-            send(this.ws, {
-              what: What.AddIceCandidate,
-              data: JSON.stringify(candidate)
-            });
+            this.ws &&
+              send(this.ws, {
+                what: What.AddIceCandidate,
+                data: JSON.stringify(candidate)
+              });
           }
         };
 
         this.pc.ontrack = (event) => onStream(event.streams[0]);
 
-        send(this.ws, {
-          what: What.Call,
-          options: {
-            force_hw_vcodec: true,
-            vformat: 30 /* 30=640x480, 30 fps */,
-            trickle_ice: false
-          }
-        });
+        this.ws &&
+          send(this.ws, {
+            what: What.Call,
+            options: {
+              force_hw_vcodec: true,
+              vformat: 30 /* 30=640x480, 30 fps */,
+              trickle_ice: false
+            }
+          });
       };
 
       this.ws.onmessage = async (event) => {
@@ -96,10 +98,11 @@ export class Signal {
                 if (sessionDescription) {
                   this.pc?.setLocalDescription(sessionDescription);
 
-                  send(this.ws, {
-                    what: What.Answer,
-                    data: JSON.stringify(sessionDescription)
-                  });
+                  this.ws &&
+                    send(this.ws, {
+                      what: What.Answer,
+                      data: JSON.stringify(sessionDescription)
+                    });
                 }
               } catch (error) {
                 if (onError) {

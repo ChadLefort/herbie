@@ -1,21 +1,19 @@
 import { PayloadAction, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
 import { OptionsObject, SnackbarKey, SnackbarMessage } from 'notistack';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuid } from 'uuid';
 
-import { RootState } from './store';
+import { RootState } from '../app/store';
 
 const name = 'notifications';
 
 export type Notification = {
-  id?: string;
+  id?: SnackbarKey;
   message: SnackbarMessage;
   options?: OptionsObject;
   dismissed?: boolean;
 };
 
-export const notificationsAdapter = createEntityAdapter<Notification>({
-  selectId: (notification) => notification.id
-});
+export const notificationsAdapter = createEntityAdapter<Notification>();
 export const notificationsSelectors = notificationsAdapter.getSelectors<RootState>((state) => state.notifications);
 
 const notifications = createSlice({
@@ -24,8 +22,8 @@ const notifications = createSlice({
   reducers: {
     enqueueSnackbar(state, action: PayloadAction<Notification>) {
       notificationsAdapter.addOne(state, {
-        id: action.payload.id || uuidv4(),
-        ...action.payload
+        ...action.payload,
+        id: action.payload.id || uuid()
       });
     },
     closeSnackbar(state, action: PayloadAction<SnackbarKey>) {

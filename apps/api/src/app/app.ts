@@ -4,7 +4,7 @@ import { IClient } from '@herbie/types';
 import { canControl, cannotControl, send } from '@herbie/utils';
 import express from 'express';
 import expressWs from 'express-ws';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuid } from 'uuid';
 import ws from 'ws';
 
 import { controlGateway } from './gateway';
@@ -15,7 +15,7 @@ export class App {
   express: expressWs.Application;
   ws: ws.Server;
   clients: IClient[];
-  clientControlling: string;
+  clientControlling?: string;
 
   constructor() {
     logger.info('Starting App');
@@ -29,7 +29,7 @@ export class App {
     this.clients = [];
 
     this.ws.on('connection', (ws) => {
-      const userId = uuidv4();
+      const userId = uuid();
 
       this.clients.push({ id: userId, ws });
 
@@ -37,7 +37,7 @@ export class App {
 
       if (this.clients.length > 1) {
         const client = this.clients.find(({ id }) => id === userId);
-        send(client.ws, cannotControl(), logger);
+        client && send(client.ws, cannotControl(), logger);
       } else {
         const [client] = this.clients;
 
@@ -65,7 +65,6 @@ export class App {
     });
 
     this.express.use(express.static(path.join(__dirname, '../client')));
-    this.express.use('/favicon.ico', express.static(path.join(__dirname, '../client/assets/favicon.ico')));
     this.express.get('/', (req, res) => res.sendFile(path.join(__dirname, '../client', 'index.html')));
   }
 }

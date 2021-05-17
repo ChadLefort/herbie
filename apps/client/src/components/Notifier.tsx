@@ -1,8 +1,8 @@
 import { SnackbarKey, useSnackbar } from 'notistack';
 import React from 'react';
 
-import { notificationsSelectors, removeSnackbar } from '../app/notifications.slice';
 import { useAppDispatch, useAppSelector } from '../app/store';
+import { notificationsSelectors, removeSnackbar } from '../slices/notifications.slice';
 
 let displayed: SnackbarKey[] = [];
 
@@ -21,12 +21,12 @@ const Notifier = () => {
 
   React.useEffect(() => {
     notifications.forEach(({ id, message, options = {}, dismissed = false }) => {
-      if (dismissed) {
+      if (id && dismissed) {
         closeSnackbar(id);
         return;
       }
 
-      if (displayed.includes(id)) return;
+      if (id && displayed.includes(id)) return;
 
       enqueueSnackbar(message, {
         key: id,
@@ -43,7 +43,7 @@ const Notifier = () => {
         }
       });
 
-      storeDisplayed(id);
+      id && storeDisplayed(id);
     });
   }, [notifications, closeSnackbar, enqueueSnackbar, dispatch]);
 

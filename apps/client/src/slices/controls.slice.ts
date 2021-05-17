@@ -1,40 +1,34 @@
-import { HerbieControlWebSocketAction, IKeyMap } from '@herbie/types';
-import { AnyAction, ThunkAction, createSlice } from '@reduxjs/toolkit';
+import { HerbieControlWebSocketAction, IKeyMap, Message } from '@herbie/types';
+import { createSlice } from '@reduxjs/toolkit';
 
-import { closeAllSnackbars, closeSnackbar, enqueueSnackbar, notificationsSelectors } from './notifications.slice';
-import { RootState } from './store';
+import { AppThunkAction } from '../app/store';
+import { hasNotification } from '../common/helpers/has-notification';
+import { closeAllSnackbars, closeSnackbar, enqueueSnackbar } from './notifications.slice';
 
 type Control = { canControl: boolean; message: string };
 
 const name = 'herbie/controls';
 
-export const setPing = (payload: number): ThunkAction<number, RootState, null, AnyAction> => (dispatch, getState) => {
+export const setPing = (payload: number): AppThunkAction<number> => (dispatch, getState) => {
   dispatch(actions.setPing(payload));
 
-  const message = 'Oh snap! Herbie is close to an object.';
-  const pingNotification = notificationsSelectors
-    .selectAll(getState() as RootState)
-    .find((notification) => notification.message === message);
+  const message = Message.WarningPing;
+  const pingNotification = hasNotification(getState(), message);
 
   if (!pingNotification && payload <= 8) {
     dispatch(enqueueSnackbar({ message, options: { variant: 'warning', persist: true } }));
   }
 
-  if (pingNotification && payload > 8) {
+  if (pingNotification?.id && payload > 8) {
     dispatch(closeSnackbar(pingNotification.id));
   }
 
   return payload;
 };
 
-export const setControl = (payload: Control): ThunkAction<Control, RootState, null, AnyAction> => (
-  dispatch,
-  getState
-) => {
-  const message = 'Only one client can be connected at a time.';
-  const cannotControlNotification = notificationsSelectors
-    .selectAll(getState() as RootState)
-    .find((notification) => notification.message === message);
+export const setControl = (payload: Control): AppThunkAction<Control> => (dispatch, getState) => {
+  const message = Message.InfoCannotControl;
+  const cannotControlNotification = hasNotification(getState(), message);
 
   dispatch(actions.setControl(payload));
 
@@ -42,7 +36,7 @@ export const setControl = (payload: Control): ThunkAction<Control, RootState, nu
     dispatch(enqueueSnackbar({ message, options: { variant: 'info', persist: true } }));
   }
 
-  if (payload.canControl && cannotControlNotification) {
+  if (payload.canControl && cannotControlNotification?.id) {
     dispatch(closeSnackbar(cannotControlNotification.id));
     dispatch(enqueueSnackbar({ message: payload.message, options: { variant: 'info' } }));
   }
@@ -50,7 +44,7 @@ export const setControl = (payload: Control): ThunkAction<Control, RootState, nu
   return payload;
 };
 
-export const stopHerbie = (): ThunkAction<void, RootState, null, AnyAction> => (dispatch) => {
+export const stopHerbie = (): AppThunkAction<void> => (dispatch) => {
   dispatch(actions.stopHerbie());
   dispatch(closeAllSnackbars());
 };
@@ -98,7 +92,7 @@ const controls = createSlice({
       })
     },
     moveHead: {
-      reducer: null,
+      reducer: (state) => state,
       prepare: (mouseX: number) => ({
         payload: { mouseX },
         meta: {
@@ -110,7 +104,7 @@ const controls = createSlice({
       })
     },
     moveWheels: {
-      reducer: null,
+      reducer: (state) => state,
       prepare: (pressedKey: IKeyMap) => ({
         payload: { pressedKey },
         meta: {
@@ -131,5 +125,4 @@ const controls = createSlice({
 });
 
 export const { actions, reducer: controlsReducer } = controls;
-
 export const { startHerbie, moveHead, moveWheels } = actions;

@@ -4,7 +4,7 @@ type Element = {
   requestFullscreen(): Promise<void>;
 };
 
-export function useFullscreen<T extends Element>(ref: MutableRefObject<T>) {
+export function useFullscreen<T extends Element>(ref: MutableRefObject<T> | MutableRefObject<null>) {
   const [isFullscreen, setIsFullscreen] = useState(document.fullscreenElement != null);
 
   const setFullscreen = async () => {
@@ -20,7 +20,9 @@ export function useFullscreen<T extends Element>(ref: MutableRefObject<T>) {
 
   useLayoutEffect(() => {
     document.onfullscreenchange = () => setIsFullscreen(document.fullscreenElement != null);
-    return () => (document.onfullscreenchange = undefined);
+    return () => {
+      document.onfullscreenchange = null;
+    };
   });
 
   return { isFullscreen, setFullscreen };

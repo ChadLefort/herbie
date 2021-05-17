@@ -3,10 +3,10 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import React, { useEffect, useState } from 'react';
 
-import { useAppSelector } from '../app/store';
+import { useAppDispatch } from '../app/store';
 import { wsVideoURL } from '../app/ws';
-import { useErrorVideo } from '../common/hooks/useErrorVideo';
 import { Signal } from '../common/Signal';
+import { setError } from '../slices/connection.slice';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -27,9 +27,9 @@ type Props = {
 
 export const Video: React.FC<Props> = ({ hasStarted }) => {
   const classes = useStyles();
+  const dispatch = useAppDispatch();
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { setError } = useErrorVideo();
 
   const onLoading = () => setIsLoading(false);
 
@@ -53,9 +53,13 @@ export const Video: React.FC<Props> = ({ hasStarted }) => {
       signal = null;
     };
 
+    const onError = (error: string) => {
+      dispatch(setError(error));
+    };
+
     if (hasStarted) {
       ref?.addEventListener('loadeddata', onLoading);
-      signal = new Signal(wsVideoURL, onStream, onClose, setError);
+      signal = new Signal(wsVideoURL, onStream, onClose, onError);
       setIsLoading(true);
     }
 
@@ -64,7 +68,7 @@ export const Video: React.FC<Props> = ({ hasStarted }) => {
       signal = null;
       ref?.removeEventListener('loadeddata', onLoading);
     };
-  }, [hasStarted, setError]);
+  }, [dispatch, hasStarted]);
 
   return hasStarted ? (
     <Box className={classes.container}>

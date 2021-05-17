@@ -14,10 +14,10 @@ import Icon from '@mdi/react';
 import useMouse from '@react-hook/mouse-position';
 import React, { useEffect, useRef } from 'react';
 
-import { moveHead, moveWheels, startHerbie, stopHerbie } from '../app/controls.slice';
 import { useAppDispatch, useAppSelector } from '../app/store';
-import { useFullscreen } from '../common/hooks/useFullscreen';
-import { useKeyPress } from '../common/hooks/useKeyPress';
+import { useFullscreen } from '../hooks/useFullscreen';
+import { useKeyPress } from '../hooks/useKeyPress';
+import { moveHead, moveWheels, startHerbie, stopHerbie } from '../slices/controls.slice';
 import { Video } from './Video';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -93,7 +93,7 @@ export const Controls: React.FC = () => {
       ];
 
       const pressedKey = keys.find((key) => key.value);
-      dispatch(moveWheels(pressedKey));
+      pressedKey && dispatch(moveWheels(pressedKey));
     }
   }, [hasStarted, keyW, keyA, keyS, keyD, dispatch]);
 
@@ -129,7 +129,7 @@ export const Controls: React.FC = () => {
           <IconButton
             onClick={handleClickStart}
             classes={{ root: classes.button }}
-            disabled={!control?.canControl || error}
+            disabled={Boolean(!control?.canControl || error)}
           >
             <StartIcon fontSize="large" />
           </IconButton>
@@ -137,7 +137,7 @@ export const Controls: React.FC = () => {
           <IconButton
             onClick={handleClickStop}
             classes={{ root: classes.button }}
-            disabled={!control?.canControl || error}
+            disabled={Boolean(!control?.canControl || error)}
           >
             <StopIcon fontSize="large" />
           </IconButton>

@@ -1,7 +1,7 @@
 import { HerbieControlWebSocketAction } from '@herbie/types';
 import { websocketBuilder } from '@herbie/utils';
 
-import { setControl, setPing } from './controls.slice';
+import { setControl, setPing } from '../slices/controls.slice';
 
 export const herbieWebsocketBuilder = websocketBuilder()
   .add(HerbieControlWebSocketAction.Ping, (payload: number) => (dispatch) => {

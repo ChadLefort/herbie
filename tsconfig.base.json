@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "esModuleInterop": true,
+    "strict": true,
     "paths": {
       "@herbie/utils": ["libs/utils/src/index.ts"],
       "@herbie/types": ["libs/types/src/index.ts"]

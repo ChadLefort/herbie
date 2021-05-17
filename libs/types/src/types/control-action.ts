@@ -1,12 +1,4 @@
-export enum HerbieControlWebSocketAction {
-  Start = 'start',
-  Stop = 'stop',
-  MoveHead = 'move head',
-  Keypress = 'keypress',
-  Ping = 'ping',
-  CanControl = 'can control',
-  CannotControl = 'cannot control'
-}
+import { HerbieControlWebSocketAction } from '../enums/herbie-control-ws-actions';
 
 export type ControlAction<T = any> = {
   action: HerbieControlWebSocketAction;
