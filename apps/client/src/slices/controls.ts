@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import { AppThunkAction } from '../app/store';
 import { hasNotification } from '../common/helpers/has-notification';
-import { closeAllSnackbars, closeSnackbar, enqueueSnackbar } from './notifications.slice';
+import { closeAllSnackbars, closeSnackbar, enqueueSnackbar } from './notifications';
 
 type Control = { canControl: boolean; message: string };
 

@@ -2,9 +2,9 @@ import { websocketMiddleware } from '@herbie/utils';
 import { AnyAction, ThunkAction, configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 
-import { connectionReducer, setConnection, setError } from '../slices/connection.slice';
-import { controlsReducer } from '../slices/controls.slice';
-import { notificationsReducer } from '../slices/notifications.slice';
+import { connectionReducer, setConnection, setError } from '../slices/connection';
+import { controlsReducer } from '../slices/controls';
+import { notificationsReducer } from '../slices/notifications';
 import { wsControl as connection } from './ws';
 import { herbieWebsocketBuilder as websocketBuilder } from './ws-builder';
 

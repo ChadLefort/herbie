@@ -15,10 +15,10 @@ import useMouse from '@react-hook/mouse-position';
 import React, { useEffect, useRef } from 'react';
 
 import { useAppDispatch, useAppSelector } from '../app/store';
-import { useFullscreen } from '../hooks/useFullscreen';
-import { useKeyPress } from '../hooks/useKeyPress';
-import { moveHead, moveWheels, startHerbie, stopHerbie } from '../slices/controls.slice';
-import { Video } from './Video';
+import { useFullscreen } from '../hooks/use-fullscreen';
+import { useKeyPress } from '../hooks/use-keypress';
+import { moveHead, moveWheels, startHerbie, stopHerbie } from '../slices/controls';
+import { Video } from './video';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

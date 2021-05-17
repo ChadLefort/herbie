@@ -5,11 +5,11 @@ import { SnackbarProvider } from 'notistack';
 import React from 'react';
 import { Provider } from 'react-redux';
 
-import { Controls } from '../components/Controls';
-import Notifier from '../components/Notifier';
+import { Controls } from '../components/controls';
+import Notifier from '../components/notifier';
 import { store } from './store';
 
-// import { Gamepad } from '../components/Gamepad';
+// import { Gamepad } from '../components/gamepad';
 
 export const App: React.FC = () => {
   const muiTheme = createMuiTheme({

@@ -3,8 +3,8 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import { AppThunkAction } from '../app/store';
 import { hasNotification } from '../common/helpers/has-notification';
-import { startHerbie } from './controls.slice';
-import { closeSnackbar, enqueueSnackbar } from './notifications.slice';
+import { startHerbie } from './controls';
+import { closeSnackbar, enqueueSnackbar } from './notifications';
 
 const name = 'herbie/connection';
 

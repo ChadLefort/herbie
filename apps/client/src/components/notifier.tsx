@@ -2,7 +2,7 @@ import { SnackbarKey, useSnackbar } from 'notistack';
 import React from 'react';
 
 import { useAppDispatch, useAppSelector } from '../app/store';
-import { notificationsSelectors, removeSnackbar } from '../slices/notifications.slice';
+import { notificationsSelectors, removeSnackbar } from '../slices/notifications';
 
 let displayed: SnackbarKey[] = [];
 

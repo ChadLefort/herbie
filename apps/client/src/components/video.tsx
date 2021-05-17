@@ -5,8 +5,8 @@ import React, { useEffect, useState } from 'react';
 
 import { useAppDispatch } from '../app/store';
 import { wsVideoURL } from '../app/ws';
-import { Signal } from '../common/Signal';
-import { setError } from '../slices/connection.slice';
+import { Signal } from '../common/signal';
+import { setError } from '../slices/connection';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
