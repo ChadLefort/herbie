@@ -18,23 +18,42 @@ export const Gamepad: React.FC = () => {
 
   const controller = gamepads[0] ?? undefined;
   const rightStick = controller?.axes[2];
-  const [value, setValue] = useState(90);
+  const [value, setValue] = useState(1280);
 
-  useEffect(() => {
-    // // going left
-    if (rightStick === -1 && value > 0) {
-      setValue(value - 2);
+  const calcDirectionVertical = (axe: number) => {
+    if (axe < -0.2) {
+      return 'up';
     }
 
-    // // going right
-    if (rightStick === 1 && value < 180) {
-      setValue(value + 2);
+    if (axe > 0.2) {
+      return 'down';
+    }
+  };
+
+  const calcDirectionHorizontal = (axe: number) => {
+    if (axe < -0.2) {
+      return 'left';
+    }
+
+    if (axe > 0.2) {
+      return 'right';
+    }
+  };
+
+  useEffect(() => {
+    const horizontal = calcDirectionHorizontal(rightStick);
+
+    if (horizontal === 'left' && value > 0) {
+      setValue(value - 10);
+    }
+
+    if (horizontal === 'right' && value < 2560) {
+      setValue(value + 10);
     }
   }, [controller?.axes, rightStick, value]);
 
   useEffect(() => {
     if (hasStarted && control?.canControl) {
-      console.log('move head', value);
       dispatch(moveHead(value));
     }
   }, [control?.canControl, dispatch, hasStarted, value]);
@@ -48,36 +67,20 @@ export const Gamepad: React.FC = () => {
         down: controller?.buttons[13]?.pressed
       };
 
+      const horizontal = calcDirectionHorizontal(controller?.axes[0]);
+      const vertical = calcDirectionVertical(controller?.axes[1]);
+
       const keys: IKeyMap[] = [
-        { key: 'w', value: dPad.up || controller?.axes[1] === -1 },
-        { key: 'a', value: dPad.left || controller?.axes[0] === -1 },
-        { key: 's', value: dPad.down || controller?.axes[1] === 1 },
-        { key: 'd', value: dPad.right || controller?.axes[0] === 1 }
+        { key: 'w', value: dPad.up || vertical === 'up' },
+        { key: 'a', value: dPad.left || horizontal === 'left' },
+        { key: 's', value: dPad.down || vertical === 'down' },
+        { key: 'd', value: dPad.right || horizontal === 'right' }
       ];
 
       const pressedKey = keys.find((key) => key.value);
-      pressedKey && dispatch(moveWheels(pressedKey));
+      dispatch(moveWheels(pressedKey));
     }
   }, [controller, dispatch, hasStarted, control?.canControl]);
 
-  return process.env.NX_GAMEPAD_DEBUG ? (
-    <React.Fragment>
-      {Object.keys(gamepads).map((gamepadId) => {
-        const id = (gamepadId as unknown) as number;
-        console.log('displaying gamepad', gamepads[id]);
-
-        return (
-          <div>
-            <h2>{gamepads[id].id}</h2>
-            {gamepads[id].buttons &&
-              gamepads[id].buttons.map((button, index) => (
-                <div>
-                  {index}: {button.pressed ? 'True' : 'False'}
-                </div>
-              ))}
-          </div>
-        );
-      })}
-    </React.Fragment>
-  ) : null;
+  return null;
 };

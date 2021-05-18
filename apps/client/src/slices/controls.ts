@@ -105,7 +105,7 @@ const controls = createSlice({
     },
     moveWheels: {
       reducer: (state) => state,
-      prepare: (pressedKey: IKeyMap) => ({
+      prepare: (pressedKey?: IKeyMap) => ({
         payload: { pressedKey },
         meta: {
           ws: {

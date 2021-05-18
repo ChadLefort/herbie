@@ -93,7 +93,7 @@ export const Controls: React.FC = () => {
       ];
 
       const pressedKey = keys.find((key) => key.value);
-      pressedKey && dispatch(moveWheels(pressedKey));
+      dispatch(moveWheels(pressedKey));
     }
   }, [hasStarted, keyW, keyA, keyS, keyD, dispatch, control?.canControl]);
 
