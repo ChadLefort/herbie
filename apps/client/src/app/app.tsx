@@ -6,10 +6,9 @@ import React from 'react';
 import { Provider } from 'react-redux';
 
 import { Controls } from '../components/controls';
+import { Gamepad } from '../components/gamepad';
 import Notifier from '../components/notifier';
 import { store } from './store';
-
-// import { Gamepad } from '../components/gamepad';
 
 export const App: React.FC = () => {
   const muiTheme = createMuiTheme({
@@ -31,7 +30,7 @@ export const App: React.FC = () => {
         <SnackbarProvider preventDuplicate anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
           <Notifier />
           <Controls />
-          {/* <Gamepad /> */}
+          <Gamepad />
         </SnackbarProvider>
       </ThemeProvider>
     </Provider>

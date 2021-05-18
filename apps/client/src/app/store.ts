@@ -1,6 +1,6 @@
+import { Message } from '@herbie/types';
 import { websocketMiddleware } from '@herbie/utils';
 import { AnyAction, ThunkAction, configureStore } from '@reduxjs/toolkit';
-import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 
 import { connectionReducer, setConnection, setError } from '../slices/connection';
 import { controlsReducer } from '../slices/controls';
@@ -27,11 +27,9 @@ connection.onclose = () => {
 };
 
 connection.onerror = () => {
-  store.dispatch(setError(true));
+  store.dispatch(setError(Message.ErrorControl));
 };
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 export type AppThunkAction<T> = ThunkAction<T, RootState, null, AnyAction>;
-export const useAppDispatch = () => useDispatch<AppDispatch>();
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

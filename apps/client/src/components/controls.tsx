@@ -14,7 +14,7 @@ import Icon from '@mdi/react';
 import useMouse from '@react-hook/mouse-position';
 import React, { useEffect, useRef } from 'react';
 
-import { useAppDispatch, useAppSelector } from '../app/store';
+import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { useFullscreen } from '../hooks/use-fullscreen';
 import { useKeyPress } from '../hooks/use-keypress';
 import { moveHead, moveWheels, startHerbie, stopHerbie } from '../slices/controls';
@@ -78,13 +78,13 @@ export const Controls: React.FC = () => {
   });
 
   useEffect(() => {
-    if (mouse.x && hasStarted) {
+    if (mouse.x && hasStarted && control?.canControl) {
       dispatch(moveHead(mouse.x));
     }
-  }, [dispatch, mouse.x, hasStarted]);
+  }, [dispatch, mouse.x, hasStarted, control?.canControl]);
 
   useEffect(() => {
-    if (hasStarted) {
+    if (hasStarted && control?.canControl) {
       const keys: IKeyMap[] = [
         { key: 'w', value: keyW },
         { key: 'a', value: keyA },
@@ -95,7 +95,7 @@ export const Controls: React.FC = () => {
       const pressedKey = keys.find((key) => key.value);
       pressedKey && dispatch(moveWheels(pressedKey));
     }
-  }, [hasStarted, keyW, keyA, keyS, keyD, dispatch]);
+  }, [hasStarted, keyW, keyA, keyS, keyD, dispatch, control?.canControl]);
 
   const handleClickStart = () => {
     dispatch(startHerbie());

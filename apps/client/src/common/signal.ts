@@ -1,6 +1,4 @@
-/* eslint-disable no-case-declarations */
-
-import { What } from '@herbie/types';
+import { Message, What } from '@herbie/types';
 import { send } from '@herbie/utils';
 
 export class Signal {
@@ -81,19 +79,17 @@ export class Signal {
         const { what, data } = msg;
 
         switch (what) {
-          case What.Offer:
-            const mediaConstraints: RTCOfferOptions = {
-              offerToReceiveAudio: false,
-              offerToReceiveVideo: true
-            };
-
+          case What.Offer: {
             try {
               await this.pc?.setRemoteDescription(new RTCSessionDescription(JSON.parse(data)));
               this.hasRemoteDesc = true;
               this.addIceCandidates();
 
               try {
-                const sessionDescription = await this.pc?.createAnswer(mediaConstraints);
+                const sessionDescription = await this.pc?.createAnswer({
+                  offerToReceiveAudio: false,
+                  offerToReceiveVideo: true
+                });
 
                 if (sessionDescription) {
                   this.pc?.setLocalDescription(sessionDescription);
@@ -105,41 +101,41 @@ export class Signal {
                     });
                 }
               } catch (error) {
-                if (onError) {
-                  onError(`Failed to create answer: ${error}`);
-                }
+                onError && onError(Message.ErrorVideoAnswer);
               }
             } catch (error) {
-              if (onError) {
-                onError(`Failed to set the remote description: ${event}`);
-              }
-
+              onError && onError(Message.ErrorVideoRemote);
               this.ws?.close();
             }
             break;
-          case What.Answer:
+          }
+          case What.Answer: {
             break;
-          case What.Message:
+          }
+          case What.Message: {
             if (onMessage) {
               onMessage(msg.data);
             }
             break;
-          case What.IceCandidate:
+          }
+          case What.IceCandidate: {
             if (!msg.data) {
               break;
             }
 
-            const elt = JSON.parse(msg.data);
-            const candidate = new RTCIceCandidate({
-              sdpMLineIndex: elt.sdpMLineIndex,
-              candidate: elt.candidate
-            });
+            const elt: RTCIceCandidateInit = JSON.parse(data);
 
-            this.iceCandidates.push(candidate);
+            this.iceCandidates.push(
+              new RTCIceCandidate({
+                sdpMLineIndex: elt.sdpMLineIndex,
+                candidate: elt.candidate
+              })
+            );
             this.addIceCandidates();
             break;
-          case What.IceCandidates:
-            const candidates: RTCIceCandidate[] = JSON.parse(msg.data);
+          }
+          case What.IceCandidates: {
+            const candidates: RTCIceCandidate[] = JSON.parse(data);
 
             candidates.forEach((elt) => {
               const candidate = new RTCIceCandidate({
@@ -152,6 +148,7 @@ export class Signal {
 
             this.addIceCandidates();
             break;
+          }
         }
       };
 
@@ -167,7 +164,7 @@ export class Signal {
         }
       };
 
-      this.ws.onerror = () => onError && onError('An error has occurred with the video feed');
+      this.ws.onerror = () => onError && onError(Message.ErrorVideo);
     }
   }
 }

@@ -35,17 +35,16 @@ export const setConnection = (payload: boolean): AppThunkAction<boolean> => (dis
   return payload;
 };
 
-export const setError = (payload: boolean | string): AppThunkAction<boolean | string> => (dispatch, getState) => {
+export const setError = (payload: string): AppThunkAction<string> => (dispatch, getState) => {
   dispatch(actions.setError(payload));
 
-  const message = Message.ErrorGeneric;
-  const errorNotification = hasNotification(getState(), message);
+  const errorControlNotification = hasNotification(getState(), Message.ErrorControl);
 
-  if (!errorNotification) {
+  if (!errorControlNotification) {
     dispatch(
       enqueueSnackbar({
-        message,
-        options: { variant: 'error', persist: true }
+        message: payload,
+        options: { variant: 'error', persist: payload === Message.ErrorControl }
       })
     );
   }

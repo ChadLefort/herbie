@@ -1,7 +1,7 @@
 import { SnackbarKey, useSnackbar } from 'notistack';
 import React from 'react';
 
-import { useAppDispatch, useAppSelector } from '../app/store';
+import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { notificationsSelectors, removeSnackbar } from '../slices/notifications';
 
 let displayed: SnackbarKey[] = [];

@@ -1,16 +1,19 @@
 import { IKeyMap } from '@herbie/types';
-import { moveHead, moveWheels, send } from '@herbie/utils';
 import React, { useEffect, useState } from 'react';
 import { useGamepads } from 'react-gamepads';
 
-// import { wsControl } from '../app/ws';
+import { useAppDispatch, useAppSelector } from '../hooks/redux';
+import { moveHead, moveWheels } from '../slices/controls';
 
 interface GamepadRef {
   [key: number]: Gamepad;
 }
 
 export const Gamepad: React.FC = () => {
+  const { control, hasStarted } = useAppSelector((state) => state.controls);
+  const dispatch = useAppDispatch();
   const [gamepads, setGamepads] = useState<GamepadRef>({});
+
   useGamepads((gamepads) => setGamepads(gamepads));
 
   const controller = gamepads[0] ?? undefined;
@@ -30,51 +33,51 @@ export const Gamepad: React.FC = () => {
   }, [controller?.axes, rightStick, value]);
 
   useEffect(() => {
-    console.log('move head', value);
-
-    // send(wsControl, moveHead(value));
-  }, [value]);
+    if (hasStarted && control?.canControl) {
+      console.log('move head', value);
+      dispatch(moveHead(value));
+    }
+  }, [control?.canControl, dispatch, hasStarted, value]);
 
   useEffect(() => {
-    const dPad = {
-      up: controller?.buttons[12]?.pressed,
-      left: controller?.buttons[14]?.pressed,
-      right: controller?.buttons[15]?.pressed,
-      down: controller?.buttons[13]?.pressed
-    };
+    if (hasStarted && control?.canControl) {
+      const dPad = {
+        up: controller?.buttons[12]?.pressed,
+        left: controller?.buttons[14]?.pressed,
+        right: controller?.buttons[15]?.pressed,
+        down: controller?.buttons[13]?.pressed
+      };
 
-    const keys: IKeyMap[] = [
-      { key: 'w', value: dPad.up || controller?.axes[1] === -1 },
-      { key: 'a', value: dPad.left || controller?.axes[0] === -1 },
-      { key: 's', value: dPad.down || controller?.axes[1] === 1 },
-      { key: 'd', value: dPad.right || controller?.axes[0] === 1 }
-    ];
+      const keys: IKeyMap[] = [
+        { key: 'w', value: dPad.up || controller?.axes[1] === -1 },
+        { key: 'a', value: dPad.left || controller?.axes[0] === -1 },
+        { key: 's', value: dPad.down || controller?.axes[1] === 1 },
+        { key: 'd', value: dPad.right || controller?.axes[0] === 1 }
+      ];
 
-    const pressedKey = keys.find((key) => key.value);
-    // send(wsControl, moveWheels(pressedKey));
-  }, [controller]);
+      const pressedKey = keys.find((key) => key.value);
+      pressedKey && dispatch(moveWheels(pressedKey));
+    }
+  }, [controller, dispatch, hasStarted, control?.canControl]);
 
-  return null;
+  return process.env.NX_GAMEPAD_DEBUG ? (
+    <React.Fragment>
+      {Object.keys(gamepads).map((gamepadId) => {
+        const id = (gamepadId as unknown) as number;
+        console.log('displaying gamepad', gamepads[id]);
 
-  // const gamepadDisplay = Object.keys(gamepads).map((gamepadId) => {
-  //   // console.log('displaying gamepad', gamepads[gamepadId]);
-  //   return (
-  //     <div>
-  //       <h2>{gamepads[gamepadId].id}</h2>
-  //       {gamepads[gamepadId].buttons &&
-  //         gamepads[gamepadId].buttons.map((button, index) => (
-  //           <div>
-  //             {index}: {button.pressed ? 'True' : 'False'}
-  //           </div>
-  //         ))}
-  //     </div>
-  //   );
-  // });
-
-  // return (
-  //   <div className="Gamepads">
-  //     <h1>Gamepads</h1>
-  //     {gamepadDisplay}
-  //   </div>
-  // );
+        return (
+          <div>
+            <h2>{gamepads[id].id}</h2>
+            {gamepads[id].buttons &&
+              gamepads[id].buttons.map((button, index) => (
+                <div>
+                  {index}: {button.pressed ? 'True' : 'False'}
+                </div>
+              ))}
+          </div>
+        );
+      })}
+    </React.Fragment>
+  ) : null;
 };

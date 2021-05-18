@@ -3,9 +3,9 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import React, { useEffect, useState } from 'react';
 
-import { useAppDispatch } from '../app/store';
 import { wsVideoURL } from '../app/ws';
 import { Signal } from '../common/signal';
+import { useAppDispatch } from '../hooks/redux';
 import { setError } from '../slices/connection';
 
 const useStyles = makeStyles((theme: Theme) =>
