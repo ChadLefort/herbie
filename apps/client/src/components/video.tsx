@@ -23,12 +23,13 @@ const useStyles = makeStyles((theme: Theme) =>
 
 type Props = {
   hasStarted: boolean;
+  videoRef: React.RefObject<HTMLVideoElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement>;
 };
 
-export const Video: React.FC<Props> = ({ hasStarted }) => {
+export const Video: React.FC<Props> = ({ hasStarted, videoRef, canvasRef }) => {
   const classes = useStyles();
   const dispatch = useAppDispatch();
-  const videoRef = React.useRef<HTMLVideoElement>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const onLoading = () => setIsLoading(false);
@@ -68,17 +69,19 @@ export const Video: React.FC<Props> = ({ hasStarted }) => {
       signal = null;
       ref?.removeEventListener('loadeddata', onLoading);
     };
-  }, [dispatch, hasStarted]);
+  }, [dispatch, hasStarted, videoRef]);
 
   return hasStarted ? (
-    <Box className={classes.container}>
+    <Box className={classes.container} id="video-container">
       <video
+        id="video"
         ref={videoRef}
         className={classes.video}
         preload="auto"
         autoPlay
         style={isLoading ? { display: 'none' } : undefined}
       />
+      <canvas id="canvas" ref={canvasRef} hidden></canvas>
       {isLoading && (
         <Box display="flex" justifyContent="center">
           <CircularProgress size={100} />
