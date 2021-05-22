@@ -13,7 +13,7 @@ import StopIcon from '@material-ui/icons/Stop';
 import { mdiRobot } from '@mdi/js';
 import Icon from '@mdi/react';
 import useMouse from '@react-hook/mouse-position';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { useFullscreen } from '../hooks/use-fullscreen';
@@ -49,6 +49,10 @@ const useStyles = makeStyles((theme: Theme) =>
     rounded: {
       borderRadius: theme.spacing(3)
     },
+    heroContainer: {
+      height: '100%',
+      position: 'relative'
+    },
     hero: {
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
@@ -57,6 +61,23 @@ const useStyles = makeStyles((theme: Theme) =>
       borderRadius: theme.spacing(3),
       width: '100%',
       height: '100%'
+    },
+    start: {
+      fontSize: '20rem',
+      color: blue[900],
+      position: 'absolute',
+      zIndex: 1,
+      margin: '0 auto',
+      left: 0,
+      right: 0,
+      height: '100%'
+    },
+    buttonLink: {
+      height: '100%',
+      width: '100%',
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer'
     }
   })
 );
@@ -71,6 +92,7 @@ export const Controls: React.FC = () => {
   const { error } = useAppSelector((state) => state.connection);
   const { control, hasStarted } = useAppSelector((state) => state.controls);
   const { takeScreenShotAndSave } = useScreenshot();
+  const [isMouseEntered, setMouseEntered] = useState(false);
 
   const keyW = useKeyPress('w', hasStarted || false);
   const keyA = useKeyPress('a', hasStarted || false);
@@ -132,8 +154,17 @@ export const Controls: React.FC = () => {
         <Box display="flex" justifyContent="center" alignItems="center" flex="1">
           <Video hasStarted={hasStarted} videoRef={videoRef} canvasRef={canvasRef} />
           {!hasStarted && (
-            <Container maxWidth="lg" style={{ height: '100%' }}>
-              <Box className={classes.hero} style={{ backgroundImage: `url('../assets/herbie.webp')` }} />
+            <Container maxWidth="lg" className={classes.heroContainer}>
+              <button
+                type="button"
+                className={classes.buttonLink}
+                onClick={handleClickStart}
+                onMouseEnter={() => setMouseEntered(true)}
+                onMouseLeave={() => setMouseEntered(false)}
+              >
+                {isMouseEntered && <StartIcon className={classes.start} />}
+                <Box className={classes.hero} style={{ backgroundImage: `url('../assets/herbie.webp')` }} />
+              </button>
             </Container>
           )}
         </Box>
