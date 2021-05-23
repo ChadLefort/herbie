@@ -17,6 +17,9 @@ export const controlGateway = (herbie: Herbie) => (ws: ws) => {
       case Action.Stop:
         herbie.stop();
         break;
+      case Action.CenterHead:
+        herbie.centerHead();
+        break;
       case Action.MoveHead:
         herbie.moveHead(parseInt(payload));
         break;
