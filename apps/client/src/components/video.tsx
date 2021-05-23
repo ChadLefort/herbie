@@ -7,6 +7,7 @@ import { wsVideoURL } from '../app/ws';
 import { Signal } from '../common/signal';
 import { useAppDispatch } from '../hooks/redux';
 import { setError } from '../slices/connection';
+import { stopHerbie } from '../slices/controls';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -16,7 +17,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     video: {
       width: '100%',
-      borderRadius: theme.spacing(3)
+      borderRadius: theme.spacing(3),
+      cursor: 'pointer'
     }
   })
 );
@@ -71,6 +73,10 @@ export const Video: React.FC<Props> = ({ hasStarted, videoRef, canvasRef }) => {
     };
   }, [dispatch, hasStarted, videoRef]);
 
+  const handleClickStop = () => {
+    dispatch(stopHerbie());
+  };
+
   return hasStarted ? (
     <Box className={classes.container} id="video-container">
       <video
@@ -80,6 +86,7 @@ export const Video: React.FC<Props> = ({ hasStarted, videoRef, canvasRef }) => {
         preload="auto"
         autoPlay
         style={isLoading ? { display: 'none' } : undefined}
+        onClick={handleClickStop}
       />
       <canvas id="canvas" ref={canvasRef} hidden></canvas>
       {isLoading && (

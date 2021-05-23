@@ -98,7 +98,6 @@ export const Controls: React.FC = () => {
   const { error } = useAppSelector((state) => state.connection);
   const { control, hasStarted } = useAppSelector((state) => state.controls);
   const { takeScreenShotAndSave } = useScreenshot();
-  const [isMouseEntered, setMouseEntered] = useState(false);
 
   const keyW = useKeyPress('w', hasStarted || false);
   const keyA = useKeyPress('a', hasStarted || false);
@@ -165,14 +164,7 @@ export const Controls: React.FC = () => {
           <Video hasStarted={hasStarted} videoRef={videoRef} canvasRef={canvasRef} />
           {!hasStarted && (
             <Container maxWidth="lg" className={classes.heroContainer}>
-              <button
-                type="button"
-                className={classes.buttonLink}
-                onClick={handleClickStart}
-                onMouseEnter={() => setMouseEntered(true)}
-                onMouseLeave={() => setMouseEntered(false)}
-              >
-                {isMouseEntered && <StartIcon className={classes.start} />}
+              <button type="button" className={classes.buttonLink} onClick={handleClickStart}>
                 <Box className={classes.hero} style={{ backgroundImage: `url('../assets/herbie.webp')` }} />
               </button>
             </Container>
@@ -183,48 +175,56 @@ export const Controls: React.FC = () => {
       <Box display="flex" justifyContent="center">
         {!hasStarted ? (
           <Tooltip TransitionComponent={Fade} classes={{ tooltip: classes.tooltip }} title="Start">
-            <IconButton
-              onClick={handleClickStart}
-              classes={{ root: classes.button }}
-              disabled={Boolean(!control?.canControl || error)}
-            >
-              <StartIcon fontSize="large" />
-            </IconButton>
+            <span>
+              <IconButton
+                onClick={handleClickStart}
+                classes={{ root: classes.button }}
+                disabled={Boolean(!control?.canControl || error)}
+              >
+                <StartIcon fontSize="large" />
+              </IconButton>
+            </span>
           </Tooltip>
         ) : (
           <Tooltip TransitionComponent={Fade} classes={{ tooltip: classes.tooltip }} title="Stop">
-            <IconButton
-              onClick={handleClickStop}
-              classes={{ root: classes.button }}
-              disabled={Boolean(!control?.canControl || error)}
-            >
-              <StopIcon fontSize="large" />
-            </IconButton>
+            <span>
+              <IconButton onClick={handleClickStop} classes={{ root: classes.button }}>
+                <StopIcon fontSize="large" />
+              </IconButton>
+            </span>
           </Tooltip>
         )}
         {hasStarted && (
           <React.Fragment>
             <Tooltip TransitionComponent={Fade} classes={{ tooltip: classes.tooltip }} title="Center Camera">
-              <IconButton onClick={handleClickCenterHead} classes={{ root: classes.button }}>
-                <VerticalAlignCenterIcon fontSize="large" />
-              </IconButton>
+              <span>
+                <IconButton onClick={handleClickCenterHead} classes={{ root: classes.button }}>
+                  <VerticalAlignCenterIcon fontSize="large" />
+                </IconButton>
+              </span>
             </Tooltip>
             <Tooltip TransitionComponent={Fade} classes={{ tooltip: classes.tooltip }} title="Save Screenshot">
-              <IconButton onClick={handleScreenShot} classes={{ root: classes.button }}>
-                <ImageIcon fontSize="large" />
-              </IconButton>
+              <span>
+                <IconButton onClick={handleScreenShot} classes={{ root: classes.button }}>
+                  <ImageIcon fontSize="large" />
+                </IconButton>
+              </span>
             </Tooltip>
           </React.Fragment>
         )}
         <Tooltip TransitionComponent={Fade} classes={{ tooltip: classes.tooltip }} title="Fullscreen">
           {isFullscreen ? (
-            <IconButton onClick={handleExitFullscreen} classes={{ root: classes.button }}>
-              <FullscreenExitIcon fontSize="large" />
-            </IconButton>
+            <span>
+              <IconButton onClick={handleExitFullscreen} classes={{ root: classes.button }}>
+                <FullscreenExitIcon fontSize="large" />
+              </IconButton>
+            </span>
           ) : (
-            <IconButton onClick={setFullscreen} classes={{ root: classes.button }}>
-              <FullscreenIcon fontSize="large" />
-            </IconButton>
+            <span>
+              <IconButton onClick={setFullscreen} classes={{ root: classes.button }}>
+                <FullscreenIcon fontSize="large" />
+              </IconButton>
+            </span>
           )}
         </Tooltip>
       </Box>
