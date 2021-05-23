@@ -91,6 +91,17 @@ const controls = createSlice({
         }
       })
     },
+    centerHead: {
+      reducer: (state) => state,
+      prepare: () => ({
+        payload: {},
+        meta: {
+          ws: {
+            action: HerbieControlWebSocketAction.CenterHead
+          }
+        }
+      })
+    },
     moveHead: {
       reducer: (state) => state,
       prepare: (mouseX: number) => ({
@@ -125,4 +136,4 @@ const controls = createSlice({
 });
 
 export const { actions, reducer: controlsReducer } = controls;
-export const { startHerbie, moveHead, moveWheels } = actions;
+export const { startHerbie, centerHead, moveHead, moveWheels } = actions;

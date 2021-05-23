@@ -2,14 +2,17 @@ import { IKeyMap } from '@herbie/types';
 import Box from '@material-ui/core/Box';
 import { blue } from '@material-ui/core/colors';
 import Container from '@material-ui/core/Container';
+import Fade from '@material-ui/core/Fade';
 import IconButton from '@material-ui/core/IconButton';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
+import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import FullscreenIcon from '@material-ui/icons/Fullscreen';
 import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
 import ImageIcon from '@material-ui/icons/Image';
 import StartIcon from '@material-ui/icons/PlayArrow';
 import StopIcon from '@material-ui/icons/Stop';
+import VerticalAlignCenterIcon from '@material-ui/icons/VerticalAlignCenter';
 import { mdiRobot } from '@mdi/js';
 import Icon from '@mdi/react';
 import useMouse from '@react-hook/mouse-position';
@@ -19,7 +22,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { useFullscreen } from '../hooks/use-fullscreen';
 import { useKeyPress } from '../hooks/use-keypress';
 import { useScreenshot } from '../hooks/use-screenshot';
-import { moveHead, moveWheels, startHerbie, stopHerbie } from '../slices/controls';
+import { centerHead, moveHead, moveWheels, startHerbie, stopHerbie } from '../slices/controls';
 import { Video } from './video';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -78,6 +81,9 @@ const useStyles = makeStyles((theme: Theme) =>
       background: 'none',
       border: 'none',
       cursor: 'pointer'
+    },
+    tooltip: {
+      fontSize: '14px'
     }
   })
 );
@@ -132,6 +138,10 @@ export const Controls: React.FC = () => {
     dispatch(stopHerbie());
   };
 
+  const handleClickCenterHead = () => {
+    dispatch(centerHead());
+  };
+
   const handleExitFullscreen = () => document.exitFullscreen();
 
   const handleScreenShot = () => {
@@ -172,38 +182,51 @@ export const Controls: React.FC = () => {
 
       <Box display="flex" justifyContent="center">
         {!hasStarted ? (
-          <IconButton
-            onClick={handleClickStart}
-            classes={{ root: classes.button }}
-            disabled={Boolean(!control?.canControl || error)}
-          >
-            <StartIcon fontSize="large" />
-          </IconButton>
+          <Tooltip TransitionComponent={Fade} classes={{ tooltip: classes.tooltip }} title="Start">
+            <IconButton
+              onClick={handleClickStart}
+              classes={{ root: classes.button }}
+              disabled={Boolean(!control?.canControl || error)}
+            >
+              <StartIcon fontSize="large" />
+            </IconButton>
+          </Tooltip>
         ) : (
-          <IconButton
-            onClick={handleClickStop}
-            classes={{ root: classes.button }}
-            disabled={Boolean(!control?.canControl || error)}
-          >
-            <StopIcon fontSize="large" />
-          </IconButton>
+          <Tooltip TransitionComponent={Fade} classes={{ tooltip: classes.tooltip }} title="Stop">
+            <IconButton
+              onClick={handleClickStop}
+              classes={{ root: classes.button }}
+              disabled={Boolean(!control?.canControl || error)}
+            >
+              <StopIcon fontSize="large" />
+            </IconButton>
+          </Tooltip>
         )}
         {hasStarted && (
           <React.Fragment>
-            {isFullscreen ? (
-              <IconButton onClick={handleExitFullscreen} classes={{ root: classes.button }}>
-                <FullscreenExitIcon fontSize="large" />
+            <Tooltip TransitionComponent={Fade} classes={{ tooltip: classes.tooltip }} title="Center Camera">
+              <IconButton onClick={handleClickCenterHead} classes={{ root: classes.button }}>
+                <VerticalAlignCenterIcon fontSize="large" />
               </IconButton>
-            ) : (
-              <IconButton onClick={setFullscreen} classes={{ root: classes.button }}>
-                <FullscreenIcon fontSize="large" />
+            </Tooltip>
+            <Tooltip TransitionComponent={Fade} classes={{ tooltip: classes.tooltip }} title="Save Screenshot">
+              <IconButton onClick={handleScreenShot} classes={{ root: classes.button }}>
+                <ImageIcon fontSize="large" />
               </IconButton>
-            )}
-            <IconButton onClick={handleScreenShot} classes={{ root: classes.button }}>
-              <ImageIcon fontSize="large" />
-            </IconButton>
+            </Tooltip>
           </React.Fragment>
         )}
+        <Tooltip TransitionComponent={Fade} classes={{ tooltip: classes.tooltip }} title="Fullscreen">
+          {isFullscreen ? (
+            <IconButton onClick={handleExitFullscreen} classes={{ root: classes.button }}>
+              <FullscreenExitIcon fontSize="large" />
+            </IconButton>
+          ) : (
+            <IconButton onClick={setFullscreen} classes={{ root: classes.button }}>
+              <FullscreenIcon fontSize="large" />
+            </IconButton>
+          )}
+        </Tooltip>
       </Box>
     </Container>
   );
