@@ -79,8 +79,7 @@ const useStyles = makeStyles((theme: Theme) =>
       height: '100%',
       width: '100%',
       background: 'none',
-      border: 'none',
-      cursor: 'pointer'
+      border: 'none'
     },
     tooltip: {
       fontSize: '14px'
@@ -130,7 +129,9 @@ export const Controls: React.FC = () => {
   }, [hasStarted, keyW, keyA, keyS, keyD, dispatch, control?.canControl]);
 
   const handleClickStart = () => {
-    dispatch(startHerbie());
+    if (control?.canControl && !error) {
+      dispatch(startHerbie());
+    }
   };
 
   const handleClickStop = () => {
@@ -164,7 +165,12 @@ export const Controls: React.FC = () => {
           <Video hasStarted={hasStarted} videoRef={videoRef} canvasRef={canvasRef} />
           {!hasStarted && (
             <Container maxWidth="lg" className={classes.heroContainer}>
-              <button type="button" className={classes.buttonLink} onClick={handleClickStart}>
+              <button
+                type="button"
+                className={classes.buttonLink}
+                style={{ cursor: !control?.canControl || error ? 'not-allowed' : 'pointer' }}
+                onClick={handleClickStart}
+              >
                 <Box className={classes.hero} style={{ backgroundImage: `url('../assets/herbie.webp')` }} />
               </button>
             </Container>
