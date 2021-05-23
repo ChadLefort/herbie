@@ -92,6 +92,10 @@ export class Herbie {
     wheels.both?.stop();
   }
 
+  centerHead() {
+    this.body.head.center();
+  }
+
   moveHead(pos: number) {
     this.body.head.to(Math.round((pos + Number.EPSILON) * 10) / 10);
   }
