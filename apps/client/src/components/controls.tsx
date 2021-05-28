@@ -1,4 +1,4 @@
-import { IKeyMap } from '@herbie/types';
+import { ControlType, Direction, IDirection } from '@herbie/types';
 import Box from '@material-ui/core/Box';
 import { blue } from '@material-ui/core/colors';
 import Container from '@material-ui/core/Container';
@@ -111,21 +111,21 @@ export const Controls: React.FC = () => {
 
   useEffect(() => {
     if (mouse.x && hasStarted && control?.canControl) {
-      dispatch(moveHead(mouse.x));
+      dispatch(moveHead({ control: ControlType.Mouse, postion: mouse.x }));
     }
   }, [dispatch, mouse.x, hasStarted, control?.canControl]);
 
   useEffect(() => {
     if (hasStarted && control?.canControl) {
-      const keys: IKeyMap[] = [
-        { key: 'w', value: keyW },
-        { key: 'a', value: keyA },
-        { key: 's', value: keyS },
-        { key: 'd', value: keyD }
+      const directions: IDirection[] = [
+        { direction: Direction.Forward, value: keyW },
+        { direction: Direction.Left, value: keyA },
+        { direction: Direction.Backward, value: keyS },
+        { direction: Direction.Right, value: keyD }
       ];
 
-      const pressedKey = keys.find((key) => key.value);
-      dispatch(moveWheels(pressedKey));
+      const direction = directions.find((direction) => direction.value);
+      dispatch(moveWheels(direction));
     }
   }, [hasStarted, keyW, keyA, keyS, keyD, dispatch, control?.canControl]);
 

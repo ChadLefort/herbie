@@ -1,4 +1,4 @@
-import { IKeyMap } from '@herbie/types';
+import { Direction, IDirection, IMoveHead } from '@herbie/types';
 import { ping, send } from '@herbie/utils';
 import { Board, Proximity, Servo, Servos } from 'johnny-five';
 import PiIO from 'pi-io';
@@ -96,26 +96,26 @@ export class Herbie {
     this.body.head.center();
   }
 
-  moveHead(pos: number) {
-    this.body.head.to(Math.round((pos + Number.EPSILON) * 10) / 10);
+  moveHead({ control, postion }: IMoveHead) {
+    this.body.head.to(Math.round((postion + Number.EPSILON) * 10) / 10);
   }
 
-  keyPress(keyMap: IKeyMap) {
+  moveBody(direction?: IDirection) {
     const { wheels } = this.body;
 
-    if (keyMap) {
-      switch (keyMap.key) {
-        case 'w':
+    if (direction) {
+      switch (direction.direction) {
+        case Direction.Forward:
           wheels.both?.cw();
           break;
-        case 'a':
+        case Direction.Left:
           wheels.left.ccw();
           wheels.right.cw();
           break;
-        case 's':
+        case Direction.Backward:
           wheels.both?.ccw();
           break;
-        case 'd':
+        case Direction.Right:
           wheels.left.cw();
           wheels.right.ccw();
           break;

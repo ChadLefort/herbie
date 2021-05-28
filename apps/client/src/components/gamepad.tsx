@@ -1,4 +1,4 @@
-import { IKeyMap } from '@herbie/types';
+import { ControlType, Direction, IDirection } from '@herbie/types';
 import React, { useEffect, useState } from 'react';
 import { useGamepads } from 'react-gamepads';
 
@@ -54,7 +54,7 @@ export const Gamepad: React.FC = () => {
 
   useEffect(() => {
     if (hasStarted && control?.canControl) {
-      dispatch(moveHead(value));
+      dispatch(moveHead({ control: ControlType.Controller, postion: value }));
     }
   }, [control?.canControl, dispatch, hasStarted, value]);
 
@@ -70,15 +70,15 @@ export const Gamepad: React.FC = () => {
       const horizontal = calcDirectionHorizontal(controller?.axes[0]);
       const vertical = calcDirectionVertical(controller?.axes[1]);
 
-      const keys: IKeyMap[] = [
-        { key: 'w', value: dPad.up || vertical === 'up' },
-        { key: 'a', value: dPad.left || horizontal === 'left' },
-        { key: 's', value: dPad.down || vertical === 'down' },
-        { key: 'd', value: dPad.right || horizontal === 'right' }
+      const directions: IDirection[] = [
+        { direction: Direction.Forward, value: dPad.up || vertical === 'up' },
+        { direction: Direction.Left, value: dPad.left || horizontal === 'left' },
+        { direction: Direction.Backward, value: dPad.down || vertical === 'down' },
+        { direction: Direction.Right, value: dPad.right || horizontal === 'right' }
       ];
 
-      const pressedKey = keys.find((key) => key.value);
-      dispatch(moveWheels(pressedKey));
+      const direction = directions.find((direction) => direction.value);
+      dispatch(moveWheels(direction));
     }
   }, [controller, dispatch, hasStarted, control?.canControl]);
 

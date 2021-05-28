@@ -21,10 +21,10 @@ export const controlGateway = (herbie: Herbie) => (ws: ws) => {
         herbie.centerHead();
         break;
       case Action.MoveHead:
-        herbie.moveHead(parseInt(payload));
+        herbie.moveHead({ control: payload.control, postion: parseInt(payload.postion) });
         break;
-      case Action.Keypress:
-        herbie.keyPress(payload);
+      case Action.MoveBody:
+        herbie.moveBody(payload);
         break;
     }
   });

@@ -3,7 +3,7 @@ export enum HerbieControlWebSocketAction {
   Stop = 'stop',
   CenterHead = 'center head',
   MoveHead = 'move head',
-  Keypress = 'keypress',
+  MoveBody = 'move body',
   Ping = 'ping',
   CanControl = 'can control',
   CannotControl = 'cannot control'

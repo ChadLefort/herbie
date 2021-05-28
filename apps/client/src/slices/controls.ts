@@ -1,4 +1,4 @@
-import { HerbieControlWebSocketAction, IKeyMap, Message } from '@herbie/types';
+import { HerbieControlWebSocketAction, IDirection, IMoveHead, Message } from '@herbie/types';
 import { createSlice } from '@reduxjs/toolkit';
 
 import { AppThunkAction } from '../app/store';
@@ -104,24 +104,24 @@ const controls = createSlice({
     },
     moveHead: {
       reducer: (state) => state,
-      prepare: (mouseX: number) => ({
-        payload: { mouseX },
+      prepare: ({ control, postion }: IMoveHead) => ({
+        payload: { control, postion },
         meta: {
           ws: {
             action: HerbieControlWebSocketAction.MoveHead,
-            payload: Math.round(mouseX / 14.21)
+            payload: { control, postion: Math.round(postion / 14.21) }
           }
         }
       })
     },
     moveWheels: {
       reducer: (state) => state,
-      prepare: (pressedKey?: IKeyMap) => ({
-        payload: { pressedKey },
+      prepare: (direction?: IDirection) => ({
+        payload: { direction },
         meta: {
           ws: {
-            action: HerbieControlWebSocketAction.Keypress,
-            payload: pressedKey
+            action: HerbieControlWebSocketAction.MoveBody,
+            payload: direction
           }
         }
       })
